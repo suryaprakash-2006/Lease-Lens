@@ -74,7 +74,10 @@ LeaseLens/
 
 ---
 
-## Current Status: Phase 0 (Planning & Architecture)
+## Current Status: Phase 2 (Domain REST APIs & Business Logic Complete)
+ 
+- Phase 0 (Planning & Architectural Foundations): Completed
+- Phase 1 (Backend Infrastructure & JWT Authentication): Completed
+- Phase 2 (Domain REST APIs: Properties, Leases, Expenses, Dashboard): Completed & Verified (99 automated integration tests passing across auth and domain suites)
 
-All foundational architectural deliverables have been prepared and documented in the [`docs/`](./docs/) directory.
-Review the documentation before proceeding to **Phase 1: Backend Infrastructure & Authentication**.
+Next: **Phase 3: React + Vite Frontend Foundations**.

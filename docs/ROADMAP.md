@@ -16,27 +16,30 @@ The development of LeaseLens is structured into phased increments to guarantee s
 
 ---
 
-## Phase 1: Backend Infrastructure & Authentication
-* Setup Node.js + Express project in `backend/` with ESLint and environment configs.
-* Configure MongoDB connection with Mongoose and connection health-checks.
-* Implement User model and password hashing via bcrypt.
-* Implement JWT token generation, verification middleware, and protected route handlers.
-* Build centralized error handling middleware and request logging.
-* Unit / integration tests for `/api/v1/auth/register`, `/api/v1/auth/login`, and `/api/v1/auth/me`.
+## Phase 1: Backend Infrastructure & Authentication (Completed)
+* [x] Setup Node.js + Express project in `backend/` with ESLint and environment configs.
+* [x] Configure MongoDB connection with Mongoose and connection health-checks.
+* [x] Implement User model and password hashing via bcrypt.
+* [x] Implement JWT token generation, verification middleware, and protected route handlers.
+* [x] Build centralized error handling middleware and request logging.
+* [x] Unit / integration tests for `/api/v1/auth/register`, `/api/v1/auth/login`, and `/api/v1/auth/me`.
 
 ---
 
-## Phase 2: Domain REST APIs & Business Logic
-* **Properties API**:
-  * Create, Read, Update, Delete with ownership isolation.
-  * Search by text and filter by city, BHK, status.
-* **Leases API**:
-  * Lease lifecycle logic: status computation (`Active`, `Upcoming`, `Expired`, `Terminated`).
-  * Upcoming expiration queries (<= 30 days).
-* **Expenses API**:
-  * Categorized expense logging and monthly aggregation pipeline.
-* **Dashboard API**:
-  * Consolidated aggregation endpoint for KPI metrics, upcoming lease events, and monthly spending.
+## Phase 2: Domain REST APIs & Business Logic (Completed)
+* [x] **Properties API**:
+  * [x] Create, Read, Update, Delete with ownership isolation.
+  * [x] Search by text and filter by city, BHK, status, furnishing status.
+* [x] **Leases API**:
+  * [x] Lease lifecycle logic: status computation (`Active`, `Upcoming`, `Expired`, `Terminated`).
+  * [x] Upcoming expiration queries (<= 30 days).
+  * [x] Property ownership verification and active lease deletion safeguards.
+* [x] **Expenses API**:
+  * [x] Categorized expense logging and MongoDB aggregation pipeline for summary metrics.
+* [x] **Dashboard API**:
+  * [x] Consolidated aggregation endpoints for KPI metrics, upcoming lease events, expense charts, and recent activity feed.
+* [x] **Comprehensive Automated Test Suite**:
+  * [x] 70 integration tests in `test_phase2.js` verifying CRUD, multi-tenant isolation, and validation.
 
 ---
 

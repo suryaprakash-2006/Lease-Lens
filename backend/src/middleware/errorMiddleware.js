@@ -32,15 +32,17 @@ export const errorHandler = (err, req, res, next) => { // eslint-disable-line no
     details = err.keyValue;
   }
 
-  // Handle Mongoose Validation Error
+  // Handle Mongoose Validation Error or custom ValidationError
   if (err.name === 'ValidationError') {
-    statusCode = 400;
+    statusCode = err.statusCode || 400;
     errorType = 'ValidationError';
-    message = 'Validation failed on resource schema';
-    details = Object.values(err.errors).map((e) => ({
-      field: e.path,
-      message: e.message
-    }));
+    message = err.message || 'Validation failed on resource schema';
+    if (err.errors && typeof err.errors === 'object') {
+      details = Object.values(err.errors).map((e) => ({
+        field: e.path,
+        message: e.message
+      }));
+    }
   }
 
   // Handle Mongoose CastError (invalid ObjectId)

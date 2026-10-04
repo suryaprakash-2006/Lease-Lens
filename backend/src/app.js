@@ -5,6 +5,10 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 
 import authRoutes from './routes/authRoutes.js';
+import propertyRoutes from './routes/propertyRoutes.js';
+import leaseRoutes from './routes/leaseRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
@@ -49,6 +53,10 @@ app.use('/api/v1/health', healthRoutes);
 
 // Core API Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/properties', propertyRoutes);
+app.use('/api/v1/leases', leaseRoutes);
+app.use('/api/v1/expenses', expenseRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Root route
 app.get('/', (req, res) => {
