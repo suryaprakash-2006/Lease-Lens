@@ -53,11 +53,13 @@ The development of LeaseLens is structured into phased increments to guarantee s
 
 ---
 
-## Phase 4: Frontend Feature Modules
-* **Dashboard Page (`/dashboard`)**: KPI metric cards, upcoming deadlines widget, expense breakdown chart, and recent activity feed.
-* **Property Management (`/properties`)**: Portfolio grid/table, add property modal/form, property detail view with linked active lease, edit/delete actions.
-* **Lease Management (`/leases`)**: Lease agreement builder, status badges, lease detail modal, termination workflow.
-* **Expense Tracker (`/expenses`)**: Expense log table, filter by month/category, quick-add expense modal, total cost calculations.
+## Phase 4: Frontend Feature Modules (Completed)
+* [x] **Dashboard Page (`/dashboard`)**: Real-time KPI metric cards, upcoming lease expiration alerts, expense distribution progress bars, and recent activity audit trail.
+* [x] **Property Management (`/properties`, `/properties/new`, `/properties/:id`, `/properties/:id/edit`)**: Search & filter grid/list, full CRUD forms, unit specifications, amenity selector, and active lease deletion safeguards.
+* [x] **Lease Management (`/leases`, `/leases/new`, `/leases/:id`, `/leases/:id/edit`)**: User-owned property selector, automatic rent/deposit prefilling, lease agreement lifecycle transitions (`Active`, `Upcoming`, `Expired`, `Terminated`), and date validations.
+* [x] **Expense Tracker (`/expenses`)**: Expense log table, filter by property and category, quick-add/edit modal, delete confirmations, and financial summary cards.
+* [x] **Profile Page (`/profile`)**: User account details update, password change verification, and notification toasts.
+* [x] **Automated Frontend CRUD & Integration Verification Suite**: 44 automated tests in `frontend/test_frontend_crud.js` (158 tests total across project).
 
 ---
 

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:integration": "node test_frontend_integration.js"
+    "test:integration": "node test_frontend_integration.js",
+    "test:crud": "node test_frontend_crud.js",
+    "test": "node test_frontend_integration.js && node test_frontend_crud.js"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",

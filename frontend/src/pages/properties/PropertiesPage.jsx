@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { propertiesAPI } from '../../services/api.js';
+import { formatINR, getErrorMessage } from '../../utils/formatters.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
+import ConfirmModal from '../../components/common/ConfirmModal.jsx';
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filter state
+  // Filters
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [bhk, setBhk] = useState('');
   const [status, setStatus] = useState('');
+  const [propertyType, setPropertyType] = useState('');
+  const [furnishingStatus, setFurnishingStatus] = useState('');
+
+  // Delete modal state
+  const [deletingProperty, setDeletingProperty] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchProperties = useCallback(async () => {
     setLoading(true);
@@ -25,20 +33,51 @@ const PropertiesPage = () => {
         search,
         city,
         bhk,
-        status
+        status,
+        propertyType,
+        furnishingStatus
       });
       setProperties(response?.data?.properties || []);
     } catch (err) {
       console.error('[Properties] Error fetching property portfolio:', err);
-      setError(err.message || 'Failed to fetch properties.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [search, city, bhk, status]);
+  }, [search, city, bhk, status, propertyType, furnishingStatus]);
 
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingProperty) return;
+    setDeleteLoading(true);
+    setError(null);
+    try {
+      await propertiesAPI.delete(deletingProperty._id);
+      setDeletingProperty(null);
+      fetchProperties();
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setDeletingProperty(null);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setCity('');
+    setBhk('');
+    setStatus('');
+    setPropertyType('');
+    setFurnishingStatus('');
+  };
+
+  const hasActiveFilters = Boolean(
+    search || city || bhk || status || propertyType || furnishingStatus
+  );
 
   return (
     <div>
@@ -52,7 +91,7 @@ const PropertiesPage = () => {
         </div>
         <div>
           <Link to="/properties/new" className="btn-ll-primary">
-            <i className="bi bi-plus-lg"></i> Add Property
+            <i className="bi bi-plus-lg"></i> Add New Property
           </Link>
         </div>
       </div>
@@ -62,7 +101,7 @@ const PropertiesPage = () => {
       {/* Filter Toolbar */}
       <div className="card-saas mb-4 p-3">
         <div className="row g-2 align-items-center">
-          <div className="col-md-4">
+          <div className="col-12 col-md-4">
             <div className="input-group">
               <span className="input-group-text bg-white text-muted border-end-0">
                 <i className="bi bi-search"></i>
@@ -70,7 +109,7 @@ const PropertiesPage = () => {
               <input
                 type="text"
                 className="form-control-saas border-start-0"
-                placeholder="Search by title, locality, city..."
+                placeholder="Search title, locality, city..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -121,18 +160,30 @@ const PropertiesPage = () => {
           </div>
 
           <div className="col-6 col-md-2">
-            <button
-              onClick={() => {
-                setSearch('');
-                setCity('');
-                setBhk('');
-                setStatus('');
-              }}
-              className="btn-ll-secondary w-100 justify-content-center"
+            <select
+              className="form-select-saas"
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
             >
-              <i className="bi bi-x-circle"></i> Reset
-            </button>
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Independent House">House</option>
+              <option value="Villa">Villa</option>
+              <option value="Studio">Studio</option>
+              <option value="Commercial">Commercial</option>
+            </select>
           </div>
+
+          {hasActiveFilters && (
+            <div className="col-12 text-end pt-1">
+              <button
+                onClick={handleClearFilters}
+                className="btn btn-sm btn-link text-decoration-none text-muted"
+              >
+                <i className="bi bi-x-circle me-1"></i> Clear All Filters
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -144,22 +195,13 @@ const PropertiesPage = () => {
           icon="bi-building"
           title="No properties found"
           description={
-            search || city || bhk || status
+            hasActiveFilters
               ? 'No properties match the selected search criteria.'
               : 'You have not added any properties yet. Add your first listing to start tracking leases and expenses.'
           }
-          actionText={search || city || bhk || status ? 'Clear Filters' : 'Add Property'}
-          actionLink={search || city || bhk || status ? null : '/properties/new'}
-          onActionClick={
-            search || city || bhk || status
-              ? () => {
-                  setSearch('');
-                  setCity('');
-                  setBhk('');
-                  setStatus('');
-                }
-              : null
-          }
+          actionText={hasActiveFilters ? 'Clear Filters' : 'Add Property'}
+          actionLink={hasActiveFilters ? null : '/properties/new'}
+          onActionClick={hasActiveFilters ? handleClearFilters : null}
         />
       ) : (
         <div className="card-saas p-0 overflow-hidden">
@@ -167,9 +209,9 @@ const PropertiesPage = () => {
             <table className="table table-saas">
               <thead>
                 <tr>
-                  <th>Property Title</th>
+                  <th>Property Unit</th>
                   <th>Location</th>
-                  <th>Type & BHK</th>
+                  <th>Configuration</th>
                   <th>Area</th>
                   <th>Listed Rent</th>
                   <th>Status</th>
@@ -180,8 +222,14 @@ const PropertiesPage = () => {
                 {properties.map((prop) => (
                   <tr key={prop._id}>
                     <td>
-                      <div className="fw-bold text-dark">{prop.title}</div>
-                      <small className="text-muted">{prop.furnishingStatus} · {prop.parking ? 'Parking' : 'No Parking'}</small>
+                      <Link to={`/properties/${prop._id}`} className="fw-bold text-dark text-decoration-none">
+                        {prop.title}
+                      </Link>
+                      <div>
+                        <small className="text-muted">
+                          {prop.furnishingStatus} · {prop.parking ? 'Parking' : 'No Parking'}
+                        </small>
+                      </div>
                     </td>
                     <td>
                       <div>{prop.address?.locality}</div>
@@ -193,7 +241,7 @@ const PropertiesPage = () => {
                       </span>
                     </td>
                     <td>{prop.areaSqFt} sq.ft</td>
-                    <td className="fw-bold text-dark">₹{prop.listedRent?.toLocaleString('en-IN')}</td>
+                    <td className="fw-bold text-dark">{formatINR(prop.listedRent)}/mo</td>
                     <td>
                       <StatusBadge status={prop.status} />
                     </td>
@@ -213,6 +261,13 @@ const PropertiesPage = () => {
                         >
                           <i className="bi bi-pencil"></i>
                         </Link>
+                        <button
+                          onClick={() => setDeletingProperty(prop)}
+                          className="btn btn-outline-danger"
+                          title="Delete Property"
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -222,6 +277,19 @@ const PropertiesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(deletingProperty)}
+        title="Delete Property Listing?"
+        message={`Are you sure you want to permanently delete '${deletingProperty?.title}'? Note: Properties with an active lease agreement cannot be deleted until the lease is terminated.`}
+        confirmText="Delete Property"
+        confirmVariant="danger"
+        confirmIcon="bi-trash3"
+        loading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingProperty(null)}
+      />
     </div>
   );
 };

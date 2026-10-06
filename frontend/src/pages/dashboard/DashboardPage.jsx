@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardAPI } from '../../services/api.js';
+import { formatINR, formatDate, formatDaysRemaining, getErrorMessage } from '../../utils/formatters.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
@@ -14,7 +15,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -22,7 +23,7 @@ const DashboardPage = () => {
         dashboardAPI.getMetrics(),
         dashboardAPI.getUpcomingEvents(30),
         dashboardAPI.getExpenseChart(6),
-        dashboardAPI.getRecentActivity(6)
+        dashboardAPI.getRecentActivity(8)
       ]);
 
       setMetrics(metricsRes?.data || null);
@@ -30,19 +31,19 @@ const DashboardPage = () => {
       setExpenseChart(chartRes?.data || null);
       setRecentActivity(activityRes?.data?.activity || []);
     } catch (err) {
-      console.error('[Dashboard] Error fetching dashboard statistics:', err);
-      setError(err.message || 'Failed to load dashboard metrics.');
+      console.error('[Dashboard] Error fetching statistics:', err);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   if (loading) {
-    return <LoadingSpinner message="Calculating portfolio analytics..." />;
+    return <LoadingSpinner message="Calculating portfolio analytics and cash flow..." />;
   }
 
   const hasNoData =
@@ -58,14 +59,14 @@ const DashboardPage = () => {
         <div>
           <h3 className="fw-bold mb-1">Portfolio Summary</h3>
           <p className="text-muted small mb-0">
-            Real-time occupancy, cash flow, and lease lifecycle tracking
+            Real-time occupancy tracking, lease lifecycle notifications, and operational cash flow analytics
           </p>
         </div>
         <div className="d-flex gap-2">
-          <Link to="/properties" className="btn-ll-secondary">
-            <i className="bi bi-building"></i> View Properties
+          <Link to="/properties/new" className="btn-ll-primary">
+            <i className="bi bi-plus-lg"></i> Add Property
           </Link>
-          <button onClick={fetchDashboardData} className="btn-ll-secondary" title="Refresh">
+          <button onClick={fetchDashboardData} className="btn-ll-secondary" title="Refresh Dashboard">
             <i className="bi bi-arrow-clockwise"></i> Refresh
           </button>
         </div>
@@ -113,12 +114,12 @@ const DashboardPage = () => {
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="stat-card h-100">
             <div>
-              <div className="stat-label">Monthly Rent Revenue</div>
-              <div className="stat-value">
-                ₹{(metrics?.financials?.monthlyRentalIncome ?? 0).toLocaleString('en-IN')}
+              <div className="stat-label">Monthly Rental Revenue</div>
+              <div className="stat-value text-primary">
+                {formatINR(metrics?.financials?.monthlyRentalIncome ?? 0)}
               </div>
               <div className="small text-muted mt-1">
-                Occupancy rate: <strong className="text-dark">{metrics?.properties?.occupancyRate ?? 0}%</strong>
+                Occupancy Rate: <strong className="text-dark">{metrics?.properties?.occupancyRate ?? 0}%</strong>
               </div>
             </div>
             <div className="stat-icon-wrapper bg-success-subtle text-success">
@@ -133,10 +134,10 @@ const DashboardPage = () => {
             <div>
               <div className="stat-label">Net Monthly Cash Flow</div>
               <div className="stat-value text-dark">
-                ₹{(metrics?.financials?.netMonthlyCashFlow ?? 0).toLocaleString('en-IN')}
+                {formatINR(metrics?.financials?.netMonthlyCashFlow ?? 0)}
               </div>
               <div className="small text-muted mt-1">
-                Expenses: ₹{(metrics?.financials?.monthlyExpenses ?? 0).toLocaleString('en-IN')}
+                Expenses: {formatINR(metrics?.financials?.monthlyExpenses ?? 0)}
               </div>
             </div>
             <div className="stat-icon-wrapper bg-warning-subtle text-warning">
@@ -150,9 +151,9 @@ const DashboardPage = () => {
         <EmptyState
           icon="bi-speedometer2"
           title="Welcome to your LeaseLens Dashboard!"
-          description="Your portfolio metrics will populate in real-time as you add properties, agreements, and expenses."
+          description="Your portfolio metrics, agreements, and cash flow will update automatically as you add listings, leases, and expenses."
           actionText="Add Your First Property"
-          actionLink="/properties"
+          actionLink="/properties/new"
         />
       ) : (
         <div className="row g-4">
@@ -162,17 +163,17 @@ const DashboardPage = () => {
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <h5 className="fw-bold mb-0">Upcoming Lease Events</h5>
-                  <small className="text-muted">Expiring contracts or move-ins within the next 30 days</small>
+                  <small className="text-muted">Expiring contracts or move-in deadlines within 30 days</small>
                 </div>
                 <Link to="/leases" className="small fw-semibold text-primary">
-                  All Leases <i className="bi bi-arrow-right"></i>
+                  View All Leases <i className="bi bi-arrow-right"></i>
                 </Link>
               </div>
 
               {upcomingEvents.length === 0 ? (
                 <div className="p-4 text-center text-muted bg-light rounded-3 my-2">
                   <i className="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
-                  <div className="fw-semibold">All clear! No lease deadlines in the next 30 days.</div>
+                  <div className="fw-semibold">All contracts healthy! No pending renewals or move-ins in the next 30 days.</div>
                 </div>
               ) : (
                 <div className="d-flex flex-column gap-2">
@@ -186,23 +187,25 @@ const DashboardPage = () => {
                           className={`rounded-circle p-2 d-flex align-items-center justify-content-center ${
                             evt.eventType === 'EXPIRATION' ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'
                           }`}
-                          style={{ width: '40px', height: '40px' }}
+                          style={{ width: '42px', height: '42px' }}
                         >
-                          <i className={`bi ${evt.eventType === 'EXPIRATION' ? 'bi-hourglass-split' : 'bi-box-arrow-in-right'}`}></i>
+                          <i className={`bi ${evt.eventType === 'EXPIRATION' ? 'bi-hourglass-split' : 'bi-box-arrow-in-right'} fs-5`}></i>
                         </div>
                         <div>
-                          <div className="fw-bold text-dark">{evt.property?.title || 'Property'}</div>
+                          <Link to={`/leases/${evt._id}`} className="fw-bold text-dark text-decoration-none">
+                            {evt.property?.title || 'Property Unit'}
+                          </Link>
                           <div className="small text-muted">
-                            Tenant: <strong>{evt.tenant?.name}</strong> · Rent: ₹{evt.monthlyRent?.toLocaleString('en-IN')}/mo
+                            Tenant: <strong>{evt.tenant?.name}</strong> · Rent: {formatINR(evt.monthlyRent)}/mo
                           </div>
                         </div>
                       </div>
                       <div className="text-end">
                         <span className={`badge ${evt.daysRemaining <= 7 ? 'bg-danger' : 'bg-warning text-dark'} px-2 py-1`}>
-                          {evt.daysRemaining} days left
+                          {formatDaysRemaining(evt.daysRemaining)}
                         </span>
                         <div className="small text-muted mt-1">
-                          {new Date(evt.targetDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {formatDate(evt.targetDate)}
                         </div>
                       </div>
                     </div>
@@ -221,14 +224,14 @@ const DashboardPage = () => {
                   <small className="text-muted">Categorized operational distribution</small>
                 </div>
                 <Link to="/expenses" className="small fw-semibold text-primary">
-                  All Expenses <i className="bi bi-arrow-right"></i>
+                  Manage Expenses <i className="bi bi-arrow-right"></i>
                 </Link>
               </div>
 
               {(!expenseChart?.categories || expenseChart.categories.length === 0) ? (
                 <div className="p-4 text-center text-muted bg-light rounded-3 my-2">
                   <i className="bi bi-receipt text-muted fs-3 d-block mb-2"></i>
-                  <div className="fw-semibold">No expenses logged yet</div>
+                  <div className="fw-semibold">No operational expenses logged yet</div>
                 </div>
               ) : (
                 <div className="d-flex flex-column gap-3">
@@ -237,7 +240,7 @@ const DashboardPage = () => {
                       <div className="d-flex justify-content-between align-items-center mb-1 small">
                         <span className="fw-semibold text-dark">{cat.category}</span>
                         <span className="text-muted">
-                          ₹{cat.totalAmount.toLocaleString('en-IN')} ({cat.percentage}%)
+                          {formatINR(cat.totalAmount)} ({cat.percentage}%)
                         </span>
                       </div>
                       <div className="progress" style={{ height: '7px' }}>
@@ -260,7 +263,11 @@ const DashboardPage = () => {
           {/* Recent Portfolio Activity Feed */}
           <div className="col-12">
             <div className="card-saas">
-              <h5 className="fw-bold mb-3">Recent Activity Feed</h5>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="fw-bold mb-0">Recent Activity Feed</h5>
+                <small className="text-muted">Unified portfolio audit log</small>
+              </div>
+
               {recentActivity.length === 0 ? (
                 <p className="text-muted mb-0 small">No recent activity recorded.</p>
               ) : (
@@ -272,7 +279,7 @@ const DashboardPage = () => {
                         <th>Action</th>
                         <th>Details</th>
                         <th>Status / Amount</th>
-                        <th>Timestamp</th>
+                        <th>Date & Time</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -291,17 +298,11 @@ const DashboardPage = () => {
                           <td>
                             {act.status && <StatusBadge status={act.status} />}
                             {act.amount !== undefined && (
-                              <span className="fw-semibold text-dark">₹{act.amount.toLocaleString('en-IN')}</span>
+                              <span className="fw-semibold text-dark">{formatINR(act.amount)}</span>
                             )}
                           </td>
                           <td className="text-muted small">
-                            {new Date(act.timestamp).toLocaleString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {formatDate(act.timestamp, { hour: '2-digit', minute: '2-digit' })}
                           </td>
                         </tr>
                       ))}

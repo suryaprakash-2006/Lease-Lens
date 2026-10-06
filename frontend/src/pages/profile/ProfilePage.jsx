@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
+import { formatDate, getErrorMessage } from '../../utils/formatters.js';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 
 const ProfilePage = () => {
@@ -22,6 +23,11 @@ const ProfilePage = () => {
     setErrorDetails(null);
     setSuccessMsg(null);
 
+    if (!name.trim()) {
+      setError('Full name is required.');
+      return;
+    }
+
     const payload = {
       name: name.trim(),
       phone: phone.trim()
@@ -29,7 +35,7 @@ const ProfilePage = () => {
 
     if (newPassword) {
       if (newPassword !== confirmPassword) {
-        setError('New passwords do not match.');
+        setError('New password and confirmation password do not match.');
         return;
       }
       if (newPassword.length < 6) {
@@ -37,7 +43,7 @@ const ProfilePage = () => {
         return;
       }
       if (!currentPassword) {
-        setError('Current password is required to set a new password.');
+        setError('Current password is required to authorize a password change.');
         return;
       }
       payload.currentPassword = currentPassword;
@@ -47,12 +53,12 @@ const ProfilePage = () => {
     setSaving(true);
     try {
       await updateProfile(payload);
-      setSuccessMsg('Profile updated successfully!');
+      setSuccessMsg('Account profile successfully updated!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(err.message || 'Failed to update profile.');
+      setError(getErrorMessage(err));
       setErrorDetails(err.details || null);
     } finally {
       setSaving(false);
@@ -60,9 +66,9 @@ const ProfilePage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '760px', margin: '0 auto' }}>
       <div className="mb-4">
-        <h3 className="fw-bold mb-1">Account Profile</h3>
+        <h3 className="fw-bold mb-1">Account Profile & Settings</h3>
         <p className="text-muted small mb-0">
           Manage your personal credentials, contact info, and security preferences
         </p>
@@ -71,32 +77,45 @@ const ProfilePage = () => {
       <ErrorAlert message={error} details={errorDetails} onDismiss={() => setError(null)} />
 
       {successMsg && (
-        <div className="alert alert-success d-flex align-items-center gap-2 rounded-3 my-3" role="alert">
-          <i className="bi bi-check-circle-fill"></i>
-          <div>{successMsg}</div>
+        <div className="alert alert-success d-flex align-items-center justify-content-between rounded-3 shadow-sm border-0 my-3" role="alert">
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-check-circle-fill text-success fs-5"></i>
+            <span className="fw-semibold text-success-emphasis">{successMsg}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => setSuccessMsg(null)}
+          ></button>
         </div>
       )}
 
-      {/* Profile Overview Card */}
+      {/* Profile Card */}
       <div className="card-saas mb-4 p-4">
-        <div className="d-flex align-items-center gap-3 mb-4">
+        <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
           <div
-            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-3"
+            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-3 shadow-sm"
             style={{ width: '64px', height: '64px' }}
           >
             {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h5 className="fw-bold mb-0">{user?.name}</h5>
-            <div className="text-muted small">{user?.email}</div>
-            <span className="badge bg-light text-muted border px-2 py-1 mt-1" style={{ fontSize: '0.75rem' }}>
-              Role: {user?.role === 'admin' ? 'Administrator' : 'Landlord'}
-            </span>
+            <h5 className="fw-bold text-dark mb-0">{user?.name}</h5>
+            <div className="text-muted small mb-1">{user?.email}</div>
+            <div className="d-flex gap-2 align-items-center">
+              <span className="badge bg-light text-muted border px-2 py-1" style={{ fontSize: '0.725rem' }}>
+                Role: {user?.role === 'admin' ? 'Administrator' : 'Landlord'}
+              </span>
+              <span className="text-muted small">
+                Joined: {formatDate(user?.createdAt)}
+              </span>
+            </div>
           </div>
         </div>
 
         <form onSubmit={handleUpdateProfile}>
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">General Information</h6>
+          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">1. Contact & Identity Information</h6>
           <div className="row g-3 mb-4">
             <div className="col-md-6">
               <label className="form-label-saas">Full Name</label>
@@ -120,7 +139,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label-saas">Phone Number</label>
+              <label className="form-label-saas">Contact Phone Number</label>
               <input
                 type="tel"
                 className="form-control-saas"
@@ -131,14 +150,18 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">Change Password</h6>
+          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">2. Security & Password Change</h6>
+          <p className="text-muted small mb-3">
+            Leave password fields empty unless you want to change your account password.
+          </p>
+
           <div className="row g-3 mb-4">
-            <div className="col-md-12">
+            <div className="col-12">
               <label className="form-label-saas">Current Password</label>
               <input
                 type="password"
                 className="form-control-saas"
-                placeholder="Enter current password if changing password"
+                placeholder="Enter current password to verify identity"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
@@ -149,7 +172,7 @@ const ProfilePage = () => {
               <input
                 type="password"
                 className="form-control-saas"
-                placeholder="At least 6 chars"
+                placeholder="Minimum 6 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
@@ -172,11 +195,11 @@ const ProfilePage = () => {
               {saving ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Saving Changes...
+                  Saving Profile...
                 </>
               ) : (
                 <>
-                  <i className="bi bi-check2"></i> Save Profile
+                  <i className="bi bi-check2"></i> Save Changes
                 </>
               )}
             </button>

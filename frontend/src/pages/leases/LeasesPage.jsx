@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { leasesAPI } from '../../services/api.js';
+import { formatINR, formatDate, getErrorMessage } from '../../utils/formatters.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
+import ConfirmModal from '../../components/common/ConfirmModal.jsx';
 
 const LeasesPage = () => {
   const [leases, setLeases] = useState([]);
@@ -14,6 +16,12 @@ const LeasesPage = () => {
   // Filters
   const [status, setStatus] = useState('');
   const [expiringSoon, setExpiringSoon] = useState(false);
+
+  // Modal states for termination and deletion
+  const [terminatingLease, setTerminatingLease] = useState(null);
+  const [terminateLoading, setTerminateLoading] = useState(false);
+  const [deletingLease, setDeletingLease] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchLeases = useCallback(async () => {
     setLoading(true);
@@ -26,7 +34,7 @@ const LeasesPage = () => {
       setLeases(response?.data?.leases || []);
     } catch (err) {
       console.error('[Leases] Error fetching leases:', err);
-      setError(err.message || 'Failed to fetch leases.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -35,6 +43,40 @@ const LeasesPage = () => {
   useEffect(() => {
     fetchLeases();
   }, [fetchLeases]);
+
+  const handleTerminateConfirm = async () => {
+    if (!terminatingLease) return;
+    setTerminateLoading(true);
+    setError(null);
+    try {
+      await leasesAPI.updateStatus(terminatingLease._id, 'Terminated');
+      setTerminatingLease(null);
+      fetchLeases();
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setTerminatingLease(null);
+    } finally {
+      setTerminateLoading(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingLease) return;
+    setDeleteLoading(true);
+    setError(null);
+    try {
+      await leasesAPI.delete(deletingLease._id);
+      setDeletingLease(null);
+      fetchLeases();
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setDeletingLease(null);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const hasActiveFilters = Boolean(status || expiringSoon);
 
   return (
     <div>
@@ -57,7 +99,7 @@ const LeasesPage = () => {
 
       {/* Filter Toolbar */}
       <div className="card-saas mb-4 p-3">
-        <div className="d-flex flex-wrap gap-2 align-items-center">
+        <div className="d-flex flex-wrap gap-3 align-items-center">
           <div style={{ minWidth: '180px' }}>
             <select
               className="form-select-saas"
@@ -72,7 +114,7 @@ const LeasesPage = () => {
             </select>
           </div>
 
-          <div className="form-check ms-md-3">
+          <div className="form-check">
             <input
               type="checkbox"
               id="expiringSoonCheck"
@@ -85,7 +127,7 @@ const LeasesPage = () => {
             </label>
           </div>
 
-          {(status || expiringSoon) && (
+          {hasActiveFilters && (
             <button
               onClick={() => {
                 setStatus('');
@@ -107,14 +149,14 @@ const LeasesPage = () => {
           icon="bi-file-earmark-text"
           title="No lease agreements found"
           description={
-            status || expiringSoon
+            hasActiveFilters
               ? 'No lease agreements match the selected criteria.'
               : 'You have not recorded any lease agreements yet. Create an agreement to assign tenants to your properties.'
           }
-          actionText={status || expiringSoon ? 'Clear Filters' : 'Create Lease Agreement'}
-          actionLink={status || expiringSoon ? null : '/leases/new'}
+          actionText={hasActiveFilters ? 'Clear Filters' : 'Create Lease Agreement'}
+          actionLink={hasActiveFilters ? null : '/leases/new'}
           onActionClick={
-            status || expiringSoon
+            hasActiveFilters
               ? () => {
                   setStatus('');
                   setExpiringSoon(false);
@@ -128,8 +170,8 @@ const LeasesPage = () => {
             <table className="table table-saas">
               <thead>
                 <tr>
-                  <th>Property</th>
-                  <th>Tenant</th>
+                  <th>Property Unit</th>
+                  <th>Tenant Details</th>
                   <th>Monthly Rent</th>
                   <th>Lease Period</th>
                   <th>Status</th>
@@ -140,34 +182,57 @@ const LeasesPage = () => {
                 {leases.map((lease) => (
                   <tr key={lease._id}>
                     <td>
-                      <div className="fw-bold text-dark">{lease.propertyId?.title || 'Property Unit'}</div>
-                      <small className="text-muted">{lease.propertyId?.address?.city || ''}</small>
+                      <Link to={`/leases/${lease._id}`} className="fw-bold text-dark text-decoration-none">
+                        {lease.propertyId?.title || 'Property Unit'}
+                      </Link>
+                      <div>
+                        <small className="text-muted">{lease.propertyId?.address?.city || ''}</small>
+                      </div>
                     </td>
                     <td>
-                      <div className="fw-semibold">{lease.tenant?.name}</div>
-                      <small className="text-muted">{lease.tenant?.email} · {lease.tenant?.phone}</small>
+                      <div className="fw-semibold text-dark">{lease.tenant?.name}</div>
+                      <small className="text-muted">
+                        {lease.tenant?.email} · {lease.tenant?.phone}
+                      </small>
                     </td>
                     <td>
-                      <div className="fw-bold text-dark">₹{lease.monthlyRent?.toLocaleString('en-IN')}</div>
-                      <small className="text-muted">Deposit: ₹{lease.securityDeposit?.toLocaleString('en-IN')}</small>
+                      <div className="fw-bold text-dark">{formatINR(lease.monthlyRent)}/mo</div>
+                      <small className="text-muted">Deposit: {formatINR(lease.securityDeposit)}</small>
                     </td>
                     <td>
-                      <div className="small">
-                        {new Date(lease.startDate).toLocaleDateString('en-IN')} -{' '}
-                        {new Date(lease.endDate).toLocaleDateString('en-IN')}
+                      <div className="small text-dark font-monospace">
+                        {formatDate(lease.startDate)} — {formatDate(lease.endDate)}
                       </div>
                     </td>
                     <td>
                       <StatusBadge status={lease.status} />
                     </td>
                     <td className="text-end">
-                      <Link
-                        to={`/leases/${lease._id}`}
-                        className="btn btn-sm btn-outline-secondary"
-                        title="View Details"
-                      >
-                        <i className="bi bi-eye"></i> View
-                      </Link>
+                      <div className="btn-group btn-group-sm">
+                        <Link
+                          to={`/leases/${lease._id}`}
+                          className="btn btn-outline-secondary"
+                          title="View Agreement"
+                        >
+                          <i className="bi bi-eye"></i>
+                        </Link>
+                        {lease.status === 'Active' && (
+                          <button
+                            onClick={() => setTerminatingLease(lease)}
+                            className="btn btn-outline-warning"
+                            title="Terminate Early"
+                          >
+                            <i className="bi bi-x-octagon"></i>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setDeletingLease(lease)}
+                          className="btn btn-outline-danger"
+                          title="Delete Lease Record"
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -176,6 +241,32 @@ const LeasesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Terminate Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(terminatingLease)}
+        title="Terminate Lease Agreement?"
+        message={`Are you sure you want to terminate the lease for tenant '${terminatingLease?.tenant?.name}' on property '${terminatingLease?.propertyId?.title}'? This will transition status to 'Terminated' and restore property availability.`}
+        confirmText="Terminate Lease"
+        confirmVariant="warning"
+        confirmIcon="bi-x-octagon"
+        loading={terminateLoading}
+        onConfirm={handleTerminateConfirm}
+        onCancel={() => setTerminatingLease(null)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(deletingLease)}
+        title="Delete Lease Agreement?"
+        message={`Are you sure you want to permanently delete this lease record? This action cannot be undone.`}
+        confirmText="Delete Lease"
+        confirmVariant="danger"
+        confirmIcon="bi-trash3"
+        loading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingLease(null)}
+      />
     </div>
   );
 };
