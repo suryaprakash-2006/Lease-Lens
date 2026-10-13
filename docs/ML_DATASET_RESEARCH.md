@@ -41,23 +41,23 @@ Each candidate was rigorously assessed against the 19 critical criteria defined 
 ### Candidate 1: House Rent Prediction Dataset (Sourav Banerjee)
 1. **Dataset Name:** House Rent Prediction Dataset (`House_Rent_Dataset.csv`)
 2. **Source URL:** [Kaggle Dataset Hub](https://www.kaggle.com/datasets/iamsouravbanerjee/house-rent-prediction-dataset)
-3. **Original Publisher/Source:** Sourav Banerjee; scraped from Indian property portals (Magicbricks / 99acres) in 2022.
-4. **License:** Open Access / Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) with author attribution.
-5. **Permitted Use:** Academic, educational, and research use explicitly permitted with attribution.
+3. **Original Publisher/Source:** Sourav Banerjee; compiled from MagicBricks (acknowledged on Kaggle).
+4. **License Status:** Listed on Kaggle metadata as **`CC BY-SA 4.0`** (or `Other (specified in description)` in mirrors). Compiled from MagicBricks without an authorized license grant. Licensing and redistribution rights are **UNRESOLVED**; academic fair-dealing permission has not been legally established. The dataset is retained strictly for local coursework experimentation and must not be published or redistributed.
+5. **Permitted Use:** Local internal research only. Public commercial redistribution rights are unverified and prohibited under portal terms.
 6. **Dataset Size:** 4,746 rows, 12 columns (~450 KB uncompressed CSV).
 7. **Geographic Coverage:** 6 major Indian economic hubs: Mumbai (972), Chennai (891), Bangalore (886), Hyderabad (868), Delhi (605), Kolkata (524).
 8. **Number of Features:** 11 features + 1 target (`Rent`).
 9. **Target Variable:** `Rent` (Continuous numerical, Monthly Rent in INR).
 10. **Relevant Input Features:** `BHK`, `Size` (sq ft), `City`, `Furnishing Status`, `Bathroom`, `Area Type`, `Area Locality`, `Tenant Preferred`, `Floor`.
 11. **Missing-Value Situation:** Zero missing values (0 nulls/NaNs across all 4,746 records).
-12. **Duplicate Situation:** Negligible duplicate count (~5 identical records).
-13. **Obvious Outliers:** Right-skewed rent distribution (min ₹1,200/mo, median ₹16,000/mo, max ₹3,500,000/mo). Size ranges from 10 sq ft to 8,000 sq ft. Requires standard percentile/IQR outlier filtering.
+12. **Duplicate Situation:** Negligible duplicate count (8 near-duplicates excluding `Posted On`).
+13. **Obvious Outliers:** Right-skewed rent distribution (min ₹1,200/mo, median ₹16,000/mo, max ₹3,500,000/mo). Size ranges from 10 sq ft to 8,000 sq ft.
 14. **Rent Cadence:** Monthly rental price verified.
 15. **Currency Identifiable:** Yes, Indian Rupees (INR / ₹).
 16. **Location Granularity:** High utility: hierarchical macro-location (`City`) and micro-location (`Area Locality` with 2,235 unique localities).
 17. **Support for LeaseLens:** Complete alignment with LeaseLens Mongoose `Property` model (`bhk`, `areaSqFt`, `bathrooms`, `address.city`, `address.locality`, `furnishingStatus`).
 18. **Data Leakage Risk:** Low. Exclude `Posted On` (scraper date) and `Point of Contact` (marketing channel) from feature space.
-19. **Known Limitations:** 4,746 rows is moderate; high cardinality in locality requires frequency clustering or target encoding; lacks individual boolean amenity flags.
+19. **Known Limitations:** Licensing metadata ambiguity ("Other"); 4,746 rows is moderate; high cardinality in locality requires careful encoding.
 
 ---
 
@@ -150,6 +150,26 @@ Each candidate was rigorously assessed against the 19 critical criteria defined 
 17. **Support for LeaseLens:** **Disqualified.** LeaseLens manages leases and rental yields. Training on capital sale prices fundamentally fails the rental valuation requirement. Applying a synthetic rental yield (e.g., assuming 2.5% cap rate) would invent synthetic targets rather than learning true rental market dynamics.
 18. **Data Leakage Risk:** N/A.
 19. **Known Limitations:** Wrong target variable for rental price prediction.
+
+---
+
+### Candidate 6: House Rent Prices of Metropolitan Cities in India (iamsaver) — [VERIFIED OPEN ALTERNATIVE]
+1. **Dataset Name:** House Rent Prices of Metropolitan Cities in India
+2. **Source URL:** [Kaggle Dataset Hub](https://www.kaggle.com/datasets/iamsaver/house-rent-prices-of-metropolitan-cities-in-india)
+3. **Original Publisher/Source:** iamsaver; scraped from Makaan.com.
+4. **License Status:** **`CC0: Public Domain`** explicitly established and tagged on Kaggle.
+5. **Permitted Use:** Unrestricted commercial, academic, and derivative reuse without licensing encumbrances.
+6. **Dataset Size:** ~200,000 records across 8 major Indian metropolitan cities (Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata, Ahmedabad, Pune).
+7. **Geographic Coverage:** Full pan-Indian tier-1 coverage matching all LeaseLens supported cities.
+8. **Number of Features:** 9 features + 1 target (`price`).
+9. **Target Variable:** `price` (Monthly Rent in INR).
+10. **Relevant Input Features:** `bedroom`, `bathroom`, `area`, `locality`, `furnish_type`, `property_type`, `layout_type`, `seller_type`.
+11. **Missing-Value Situation:** Low to moderate (requires inspection if selected).
+12. **Duplicate Situation:** Negligible.
+13. **Rent Cadence:** Monthly rental price verified.
+14. **Currency Identifiable:** Yes, INR.
+15. **Support for LeaseLens:** High. Aligns with LeaseLens property schema and provides explicit CC0 open reuse rights.
+16. **Recommendation:** Primary designated alternative if Candidate 1's "Other" license terms are deemed insufficient by project stakeholders.
 
 ---
 
@@ -253,11 +273,11 @@ Evaluating geographic scope:
 
 ## 9. Recommended Primary & Backup Datasets
 
-### Primary Recommendation: **House Rent Prediction Dataset (Sourav Banerjee)**
+### Primary Recommendation: **House Rent Prediction Dataset (Sourav Banerjee) — [FLAGGED FOR REVIEW]**
 * **Dataset Identifier:** `iamsouravbanerjee/house-rent-prediction-dataset`
 * **Filename:** `House_Rent_Dataset.csv`
 * **Publisher / Source:** Sourav Banerjee (Kaggle)
-* **License:** CC BY-SA 4.0 / Kaggle Open Research
+* **License Status:** `Other (specified in description)` on Kaggle; cited under CC BY in academic literature; flagged for user review.
 * **Volume:** 4,746 rows, 12 columns
 * **Target:** `Rent` (Monthly Rent in INR)
 * **Geographic Coverage:** Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata
@@ -267,7 +287,7 @@ Evaluating geographic scope:
 2. **Schema Concordance with LeaseLens Database:** Directly maps to `bhk`, `areaSqFt`, `bathrooms`, `furnishingStatus`, `address.city`, and `address.locality`.
 3. **Data Completeness & Quality:** Zero missing values across the entire dataset enables robust, deterministic preprocessing without synthetic distortion.
 4. **Clean, Unambiguous Target Variable:** Target is empirically verified monthly rent in INR, avoiding the fatal purchase-price error of sales datasets.
-5. **Clear Intellectual Property Standing:** Open academic and research terms with proper author attribution.
+5. **Intellectual Property Caveat:** While widely cited in academic machine learning research, its Kaggle tag is "Other (specified in description)" rather than a direct Creative Commons dropdown. Requires explicit stakeholder authorization before model training.
 
 #### Known Limitations & Mitigations:
 * *Limitation 1:* High cardinality in `Area Locality` (~2,235 unique localities across 4,746 rows).  
@@ -279,13 +299,24 @@ Evaluating geographic scope:
 
 ---
 
-### Backup Recommendation: **Property Rental Listings Dataset (Harshal H)**
+### Primary Verified Open Alternative: **House Rent Prices of Metropolitan Cities in India (iamsaver)**
+* **Dataset Identifier:** `iamsaver/house-rent-prices-of-metropolitan-cities-in-india`
+* **Publisher / Source:** iamsaver on Kaggle (scraped from makaan.com)
+* **License:** **CC0: Public Domain** (explicitly tagged on Kaggle)
+* **Volume:** ~200,000 listings across 8 Indian cities (Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata, Ahmedabad, Pune)
+* **Target:** `price` (Monthly Rent in INR)
+* **Features:** `bedroom`, `bathroom`, `area`, `locality`, `furnish_type`, `property_type`, `layout_type`, `seller_type`
+* **Status:** Fully qualified failover dataset with unambiguous public domain rights if Candidate 1 is rejected.
+
+---
+
+### Secondary Backup: **Property Rental Listings Dataset (Harshal H)**
 * **Dataset Identifier:** `harshalh/property-rental-listings-dataset`
 * **Publisher / Source:** Harshal H (Magicbricks scrape)
 * **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
 * **Volume:** ~3,100 rows, 18 columns
 * **Target:** `Price` (Monthly Rent in INR)
-* **Geographic Coverage:** Mumbai Metropolitan Region
+* **Geographic Coverage:** Mumbai Metropolitan Region only
 
 #### Justification as Backup:
 1. Explicit, verified CC BY 4.0 license offering unambiguous commercial and academic rights.

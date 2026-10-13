@@ -41,11 +41,15 @@ Five candidate datasets were investigated and audited against the 19 evaluation 
 ## 3. License Findings
 
 * **Primary Dataset (`iamsouravbanerjee/house-rent-prediction-dataset`):**
-  * Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) and Kaggle Open Academic Terms.
-  * Permitted for educational, academic, and non-commercial machine learning development with author attribution.
-* **Backup Dataset (`harshalh/property-rental-listings-dataset`):**
+  * Kaggle metadata tag: **`Other (specified in description)`**.
+  * Description acknowledges compilation from MagicBricks without an explicit Creative Commons grant text.
+  * Widely cited under CC BY in academic publications, but primary publisher grant requires formal user review prior to commercial or production deployment.
+* **Verified Open Alternative Dataset (`iamsaver/house-rent-prices-of-metropolitan-cities-in-india`):**
+  * Licensed under **CC0: Public Domain** on Kaggle.
+  * Covers ~200,000 listings across 8 Indian metros (Makaan scrape). Designated failover if Candidate 1 terms are rejected.
+* **Backup Single-City Dataset (`harshalh/property-rental-listings-dataset`):**
   * Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
-  * Explicitly allows modification and redistribution with attribution.
+  * Covers Mumbai Metropolitan Region only.
 * **Disqualified Datasets:**
   * PromptCloud Delhi NCR dataset marked as *"License unclear — do not use for final project dataset without further verification."*
 
