@@ -32,7 +32,8 @@ router.post('/predict', predictionValidation, async (req, res) => {
       Tenant_Preferred: req.body.Tenant_Preferred,
       Area_Type: req.body.Area_Type,
     };
-    const response = await fetch('http://127.0.0.1:8000/predict', {
+    const mlUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000/predict';
+    const response = await fetch(mlUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
