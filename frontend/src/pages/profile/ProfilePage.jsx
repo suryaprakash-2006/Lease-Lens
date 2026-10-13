@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { formatDate, getErrorMessage } from '../../utils/formatters.js';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
 
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
@@ -66,21 +67,28 @@ const ProfilePage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-      <div className="mb-4">
-        <h3 className="fw-bold mb-1">Account Profile & Settings</h3>
-        <p className="text-muted small mb-0">
-          Manage your personal credentials, contact info, and security preferences
-        </p>
-      </div>
+    <div style={{ maxWidth: '780px', margin: '0 auto' }}>
+      <PageHeader
+        title="Account Profile & Settings"
+        subtitle="Manage your personal credentials, contact info, and security preferences"
+        badge={
+          <span className="badge bg-light text-secondary border px-2 py-1" style={{ fontSize: '0.75rem' }}>
+            {user?.role === 'admin' ? 'Administrator' : 'Landlord Account'}
+          </span>
+        }
+      />
 
       <ErrorAlert message={error} details={errorDetails} onDismiss={() => setError(null)} />
 
       {successMsg && (
-        <div className="alert alert-success d-flex align-items-center justify-content-between rounded-3 shadow-sm border-0 my-3" role="alert">
+        <div
+          className="alert alert-success d-flex align-items-center justify-content-between rounded-3 border-0 my-3"
+          style={{ backgroundColor: 'var(--ll-success-bg)', border: '1px solid var(--ll-success-border)', color: 'var(--ll-success)' }}
+          role="alert"
+        >
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-check-circle-fill text-success fs-5"></i>
-            <span className="fw-semibold text-success-emphasis">{successMsg}</span>
+            <i className="bi bi-check-circle-fill fs-5"></i>
+            <span className="fw-semibold">{successMsg}</span>
           </div>
           <button
             type="button"
@@ -95,27 +103,29 @@ const ProfilePage = () => {
       <div className="card-saas mb-4 p-4">
         <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
           <div
-            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-3 shadow-sm"
-            style={{ width: '64px', height: '64px' }}
+            className="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-3 shadow-sm"
+            style={{ width: '64px', height: '64px', backgroundColor: 'var(--ll-primary)' }}
           >
             {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h5 className="fw-bold text-dark mb-0">{user?.name}</h5>
-            <div className="text-muted small mb-1">{user?.email}</div>
-            <div className="d-flex gap-2 align-items-center">
-              <span className="badge bg-light text-muted border px-2 py-1" style={{ fontSize: '0.725rem' }}>
+            <h5 className="fw-bold text-dark mb-1">{user?.name}</h5>
+            <div className="text-muted small mb-2">{user?.email}</div>
+            <div className="d-flex gap-2 align-items-center flex-wrap">
+              <span className="badge bg-light text-secondary border px-2 py-1" style={{ fontSize: '0.725rem' }}>
                 Role: {user?.role === 'admin' ? 'Administrator' : 'Landlord'}
               </span>
               <span className="text-muted small">
-                Joined: {formatDate(user?.createdAt)}
+                <i className="bi bi-calendar3 me-1"></i> Member since {formatDate(user?.createdAt)}
               </span>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleUpdateProfile}>
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">1. Contact & Identity Information</h6>
+          <div className="form-section-header">
+            <i className="bi bi-person-badge text-primary"></i> 1. Contact & Identity Information
+          </div>
           <div className="row g-3 mb-4">
             <div className="col-md-6">
               <label className="form-label-saas">Full Name</label>
@@ -150,7 +160,9 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">2. Security & Password Change</h6>
+          <div className="form-section-header">
+            <i className="bi bi-shield-lock text-primary"></i> 2. Security & Password Change
+          </div>
           <p className="text-muted small mb-3">
             Leave password fields empty unless you want to change your account password.
           </p>

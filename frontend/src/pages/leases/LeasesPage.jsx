@@ -7,6 +7,8 @@ import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import ConfirmModal from '../../components/common/ConfirmModal.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 
 const LeasesPage = () => {
   const [leases, setLeases] = useState([]);
@@ -78,33 +80,87 @@ const LeasesPage = () => {
 
   const hasActiveFilters = Boolean(status || expiringSoon);
 
+  // Accurate summary metrics derived from real application data
+  const totalCount = leases.length;
+  const activeCount = leases.filter((l) => l.status === 'Active').length;
+  const upcomingCount = leases.filter((l) => l.status === 'Upcoming').length;
+  const expiredCount = leases.filter((l) => l.status === 'Expired').length;
+
   return (
-    <div>
-      {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <h3 className="fw-bold mb-1">Lease Agreements</h3>
-          <p className="text-muted small mb-0">
-            Monitor tenant agreements, lease terms, and automated lifecycle milestones
-          </p>
-        </div>
-        <div>
+    <div className="leases-page-container">
+      {/* Standardized Reusable Page Header */}
+      <PageHeader
+        title="Lease Agreements"
+        subtitle="Monitor tenant agreements, lease terms, and automated lifecycle milestones"
+        badge={
+          <span
+            className="badge rounded-pill bg-light border text-muted px-2 py-1"
+            style={{ fontSize: '0.72rem', borderColor: 'var(--ll-border)' }}
+          >
+            {leases.length} {leases.length === 1 ? 'Agreement' : 'Agreements'}
+          </span>
+        }
+        actions={
           <Link to="/leases/new" className="btn-ll-primary">
-            <i className="bi bi-plus-lg"></i> Create Lease Agreement
+            <i className="bi bi-plus-lg" aria-hidden="true"></i>
+            <span>Create Lease Agreement</span>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <ErrorAlert message={error} onDismiss={() => setError(null)} />
+
+      {/* Summary KPI Strip (when leases exist and no active filter) */}
+      {!loading && leases.length > 0 && !hasActiveFilters && (
+        <div className="row g-3 mb-4">
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="TOTAL LEASES"
+              value={totalCount}
+              icon="bi-file-earmark-text"
+              variant="default"
+              supportingText="All registered contracts"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="ACTIVE TENANCIES"
+              value={activeCount}
+              icon="bi-check-circle"
+              variant="success"
+              supportingText="Currently occupied"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="UPCOMING"
+              value={upcomingCount}
+              icon="bi-clock"
+              variant="info"
+              supportingText="Pending move-in"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="EXPIRED / PAST"
+              value={expiredCount}
+              icon="bi-hourglass-bottom"
+              variant="warning"
+              supportingText="Concluded contracts"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Filter Toolbar */}
       <div className="card-saas mb-4 p-3">
         <div className="d-flex flex-wrap gap-3 align-items-center">
-          <div style={{ minWidth: '180px' }}>
+          <div style={{ minWidth: '190px' }}>
             <select
               className="form-select-saas"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
+              aria-label="Filter by Lease Status"
             >
               <option value="">All Statuses</option>
               <option value="Active">Active</option>
@@ -114,7 +170,7 @@ const LeasesPage = () => {
             </select>
           </div>
 
-          <div className="form-check">
+          <div className="form-check form-switch pt-1">
             <input
               type="checkbox"
               id="expiringSoonCheck"
@@ -135,13 +191,14 @@ const LeasesPage = () => {
               }}
               className="btn-ll-secondary ms-auto"
             >
-              <i className="bi bi-x-circle"></i> Clear Filters
+              <i className="bi bi-x-circle"></i>
+              <span>Clear Filters</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content Body */}
       {loading ? (
         <LoadingSpinner message="Loading lease agreements..." />
       ) : leases.length === 0 ? (
@@ -150,7 +207,7 @@ const LeasesPage = () => {
           title="No lease agreements found"
           description={
             hasActiveFilters
-              ? 'No lease agreements match the selected criteria.'
+              ? 'No lease agreements match the selected status or expiration criteria.'
               : 'You have not recorded any lease agreements yet. Create an agreement to assign tenants to your properties.'
           }
           actionText={hasActiveFilters ? 'Clear Filters' : 'Create Lease Agreement'}
@@ -171,9 +228,9 @@ const LeasesPage = () => {
               <thead>
                 <tr>
                   <th>Property Unit</th>
-                  <th>Tenant Details</th>
+                  <th>Tenant Profile</th>
                   <th>Monthly Rent</th>
-                  <th>Lease Period</th>
+                  <th>Lease Duration</th>
                   <th>Status</th>
                   <th className="text-end">Actions</th>
                 </tr>
@@ -196,11 +253,13 @@ const LeasesPage = () => {
                       </small>
                     </td>
                     <td>
-                      <div className="fw-bold text-dark">{formatINR(lease.monthlyRent)}/mo</div>
-                      <small className="text-muted">Deposit: {formatINR(lease.securityDeposit)}</small>
+                      <div className="fw-bold text-dark tabular-nums">{formatINR(lease.monthlyRent)}/mo</div>
+                      <small className="text-muted tabular-nums">
+                        Deposit: {formatINR(lease.securityDeposit)}
+                      </small>
                     </td>
                     <td>
-                      <div className="small text-dark font-monospace">
+                      <div className="small text-dark tabular-nums">
                         {formatDate(lease.startDate)} — {formatDate(lease.endDate)}
                       </div>
                     </td>
@@ -213,6 +272,7 @@ const LeasesPage = () => {
                           to={`/leases/${lease._id}`}
                           className="btn btn-outline-secondary"
                           title="View Agreement"
+                          aria-label={`View agreement for ${lease.tenant?.name}`}
                         >
                           <i className="bi bi-eye"></i>
                         </Link>
@@ -221,6 +281,7 @@ const LeasesPage = () => {
                             onClick={() => setTerminatingLease(lease)}
                             className="btn btn-outline-warning"
                             title="Terminate Early"
+                            aria-label={`Terminate lease for ${lease.tenant?.name}`}
                           >
                             <i className="bi bi-x-octagon"></i>
                           </button>
@@ -229,6 +290,7 @@ const LeasesPage = () => {
                           onClick={() => setDeletingLease(lease)}
                           className="btn btn-outline-danger"
                           title="Delete Lease Record"
+                          aria-label={`Delete lease record for ${lease.tenant?.name}`}
                         >
                           <i className="bi bi-trash3"></i>
                         </button>
@@ -259,7 +321,7 @@ const LeasesPage = () => {
       <ConfirmModal
         isOpen={Boolean(deletingLease)}
         title="Delete Lease Agreement?"
-        message={`Are you sure you want to permanently delete this lease record? This action cannot be undone.`}
+        message="Are you sure you want to permanently delete this lease record? This action cannot be reversed."
         confirmText="Delete Lease"
         confirmVariant="danger"
         confirmIcon="bi-trash3"

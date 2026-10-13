@@ -12,6 +12,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
+import predictRoutes from './routes/predictRoutes.js';
 // Load environment variables
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use('/api/v1/leases', leaseRoutes);
 app.use('/api/v1/expenses', expenseRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
+app.use('/api/v1/predict', predictRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({

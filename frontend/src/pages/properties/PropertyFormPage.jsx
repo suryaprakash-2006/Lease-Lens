@@ -4,6 +4,7 @@ import { propertiesAPI } from '../../services/api.js';
 import { getErrorMessage } from '../../utils/formatters.js';
 import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
 
 const COMMON_AMENITIES = [
   'Gym',
@@ -174,24 +175,37 @@ const PropertyFormPage = () => {
   if (loading) return <LoadingSpinner message="Loading property form..." />;
 
   return (
-    <div style={{ maxWidth: '840px', margin: '0 auto' }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <Link to="/properties" className="btn btn-sm btn-link text-decoration-none p-0 text-muted mb-1 d-inline-block">
-            <i className="bi bi-arrow-left"></i> Back to Properties
-          </Link>
-          <h3 className="fw-bold mb-0">{isEdit ? 'Edit Property Listing' : 'Add New Property Listing'}</h3>
-        </div>
-      </div>
+    <div className="property-form-container" style={{ maxWidth: '860px', margin: '0 auto' }}>
+      {/* PageHeader with Breadcrumb */}
+      <PageHeader
+        title={isEdit ? 'Edit Property Listing' : 'Add New Property Listing'}
+        subtitle={
+          isEdit
+            ? `Updating listing details for '${formData.title || 'Property'}'`
+            : 'Enter property specifications, location, amenities, and rental price'
+        }
+        breadcrumb={[
+          { label: 'Properties', to: '/properties' },
+          { label: isEdit ? 'Edit Listing' : 'New Listing' }
+        ]}
+      />
 
       <ErrorAlert message={error} details={errorDetails} onDismiss={() => setError(null)} />
 
-      <div className="card-saas p-4">
-        <form onSubmit={handleSubmit}>
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">1. General Information</h6>
+      <form onSubmit={handleSubmit}>
+        {/* Section 1: General Details */}
+        <div className="card-saas mb-4">
+          <div className="form-section-header">
+            <i className="bi bi-card-heading text-muted"></i>
+            <span>1. General Information</span>
+          </div>
+
           <div className="mb-3">
-            <label className="form-label-saas">Property Title</label>
+            <label className="form-label-saas" htmlFor="propertyTitle">
+              Property Title <span className="text-danger">*</span>
+            </label>
             <input
+              id="propertyTitle"
               type="text"
               name="title"
               className="form-control-saas"
@@ -202,10 +216,13 @@ const PropertyFormPage = () => {
             />
           </div>
 
-          <div className="row g-3 mb-4">
+          <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label-saas">Property Type</label>
+              <label className="form-label-saas" htmlFor="propertyType">
+                Building / Property Type
+              </label>
               <select
+                id="propertyType"
                 name="propertyType"
                 className="form-select-saas"
                 value={formData.propertyType}
@@ -221,8 +238,11 @@ const PropertyFormPage = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label-saas">Occupancy Status</label>
+              <label className="form-label-saas" htmlFor="propertyStatus">
+                Initial Occupancy Status
+              </label>
               <select
+                id="propertyStatus"
                 name="status"
                 className="form-select-saas"
                 value={formData.status}
@@ -234,16 +254,26 @@ const PropertyFormPage = () => {
               </select>
             </div>
           </div>
+        </div>
 
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">2. Location & Address</h6>
-          <div className="row g-3 mb-4">
+        {/* Section 2: Address & Location */}
+        <div className="card-saas mb-4">
+          <div className="form-section-header">
+            <i className="bi bi-geo-alt text-muted"></i>
+            <span>2. Location & Geographic Address</span>
+          </div>
+
+          <div className="row g-3 mb-3">
             <div className="col-md-6">
-              <label className="form-label-saas">Locality / Neighborhood</label>
+              <label className="form-label-saas" htmlFor="localityInput">
+                Locality / Neighborhood <span className="text-danger">*</span>
+              </label>
               <input
+                id="localityInput"
                 type="text"
                 name="locality"
                 className="form-control-saas"
-                placeholder="e.g. Koramangala 4th Block"
+                placeholder="e.g. Whitefield, Indiranagar"
                 value={formData.locality}
                 onChange={handleChange}
                 required
@@ -251,21 +281,36 @@ const PropertyFormPage = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label-saas">City</label>
-              <input
-                type="text"
+              <label className="form-label-saas" htmlFor="citySelect">
+                City <span className="text-danger">*</span>
+              </label>
+              <select
+                id="citySelect"
                 name="city"
-                className="form-control-saas"
-                placeholder="e.g. Bengaluru"
+                className="form-select-saas"
                 value={formData.city}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Pune">Pune</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
+          </div>
 
+          <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label-saas">State</label>
+              <label className="form-label-saas" htmlFor="stateInput">
+                State
+              </label>
               <input
+                id="stateInput"
                 type="text"
                 name="state"
                 className="form-control-saas"
@@ -276,27 +321,41 @@ const PropertyFormPage = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label-saas">Pincode</label>
+              <label className="form-label-saas" htmlFor="pincodeInput">
+                Postal PIN Code
+              </label>
               <input
+                id="pincodeInput"
                 type="text"
                 name="pincode"
                 className="form-control-saas"
-                placeholder="e.g. 560034"
+                placeholder="e.g. 560066"
                 value={formData.pincode}
                 onChange={handleChange}
               />
             </div>
           </div>
+        </div>
 
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">3. Unit Specifications & Rental Terms</h6>
-          <div className="row g-3 mb-4">
+        {/* Section 3: Configuration & Specs */}
+        <div className="card-saas mb-4">
+          <div className="form-section-header">
+            <i className="bi bi-rulers text-muted"></i>
+            <span>3. Unit Specifications & Architecture</span>
+          </div>
+
+          <div className="row g-3 mb-3">
             <div className="col-6 col-md-3">
-              <label className="form-label-saas">BHK</label>
+              <label className="form-label-saas" htmlFor="bhkInput">
+                BHK Rooms
+              </label>
               <input
+                id="bhkInput"
                 type="number"
                 name="bhk"
                 min="1"
-                className="form-control-saas"
+                max="10"
+                className="form-control-saas tabular-nums"
                 value={formData.bhk}
                 onChange={handleChange}
                 required
@@ -304,12 +363,15 @@ const PropertyFormPage = () => {
             </div>
 
             <div className="col-6 col-md-3">
-              <label className="form-label-saas">Area (Sq. Ft.)</label>
+              <label className="form-label-saas" htmlFor="areaInput">
+                Area (sq. ft.)
+              </label>
               <input
+                id="areaInput"
                 type="number"
                 name="areaSqFt"
-                min="50"
-                className="form-control-saas"
+                min="100"
+                className="form-control-saas tabular-nums"
                 value={formData.areaSqFt}
                 onChange={handleChange}
                 required
@@ -317,147 +379,200 @@ const PropertyFormPage = () => {
             </div>
 
             <div className="col-6 col-md-3">
-              <label className="form-label-saas">Bedrooms</label>
+              <label className="form-label-saas" htmlFor="bedroomsInput">
+                Bedrooms
+              </label>
               <input
+                id="bedroomsInput"
                 type="number"
                 name="bedrooms"
                 min="1"
-                className="form-control-saas"
+                className="form-control-saas tabular-nums"
                 value={formData.bedrooms}
                 onChange={handleChange}
-                required
               />
             </div>
 
             <div className="col-6 col-md-3">
-              <label className="form-label-saas">Bathrooms</label>
+              <label className="form-label-saas" htmlFor="bathroomsInput">
+                Bathrooms
+              </label>
               <input
+                id="bathroomsInput"
                 type="number"
                 name="bathrooms"
                 min="1"
-                className="form-control-saas"
+                className="form-control-saas tabular-nums"
                 value={formData.bathrooms}
                 onChange={handleChange}
-                required
               />
             </div>
+          </div>
 
+          <div className="row g-3 align-items-center">
             <div className="col-md-6">
-              <label className="form-label-saas">Monthly Listed Rent (₹)</label>
-              <input
-                type="number"
-                name="listedRent"
-                min="0"
-                className="form-control-saas"
-                value={formData.listedRent}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="col-md-6">
-              <label className="form-label-saas">Furnishing Status</label>
+              <label className="form-label-saas" htmlFor="furnishingStatus">
+                Furnishing Status
+              </label>
               <select
+                id="furnishingStatus"
                 name="furnishingStatus"
                 className="form-select-saas"
                 value={formData.furnishingStatus}
                 onChange={handleChange}
               >
-                <option value="Furnished">Furnished</option>
+                <option value="Furnished">Fully Furnished</option>
                 <option value="Semi-Furnished">Semi-Furnished</option>
                 <option value="Unfurnished">Unfurnished</option>
               </select>
             </div>
 
-            <div className="col-12">
-              <div className="form-check mt-1">
+            <div className="col-md-6 pt-md-4">
+              <div className="form-check form-switch mt-2">
                 <input
                   type="checkbox"
-                  id="parkingCheckbox"
+                  id="parkingCheck"
                   name="parking"
                   className="form-check-input"
                   checked={formData.parking}
                   onChange={handleChange}
                 />
-                <label className="form-check-label fw-semibold text-dark" htmlFor="parkingCheckbox">
-                  Dedicated Parking Space Included
+                <label className="form-check-label fw-semibold text-dark small" htmlFor="parkingCheck">
+                  Dedicated Car Parking Available
                 </label>
               </div>
             </div>
           </div>
+        </div>
 
-          <h6 className="fw-bold text-dark border-bottom pb-2 mb-3">4. Amenities & Facilities</h6>
-          <div className="mb-3">
-            <div className="d-flex flex-wrap gap-2 mb-3">
-              {COMMON_AMENITIES.map((amenity) => {
-                const isSelected = formData.amenities.includes(amenity);
-                return (
-                  <button
-                    key={amenity}
-                    type="button"
-                    onClick={() => toggleAmenity(amenity)}
-                    className={`btn btn-sm rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1 ${
-                      isSelected ? 'btn-primary' : 'btn-outline-secondary'
-                    }`}
-                  >
-                    <i className={`bi ${isSelected ? 'bi-check2' : 'bi-plus'}`}></i>
-                    {amenity}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Section 4: Amenities */}
+        <div className="card-saas mb-4">
+          <div className="form-section-header">
+            <i className="bi bi-stars text-muted"></i>
+            <span>4. Amenities & Facilities</span>
+          </div>
 
-            {/* Custom amenity addition */}
-            <div className="input-group input-group-sm" style={{ maxWidth: '380px' }}>
+          <p className="text-muted small mb-3">
+            Select standard amenities available at this unit or add custom specifications below:
+          </p>
+
+          <div className="d-flex flex-wrap gap-2 mb-3">
+            {COMMON_AMENITIES.map((amenity) => {
+              const active = formData.amenities.includes(amenity);
+              return (
+                <button
+                  type="button"
+                  key={amenity}
+                  className={`chip-toggle ${active ? 'active' : ''}`}
+                  onClick={() => toggleAmenity(amenity)}
+                >
+                  <i className={`bi ${active ? 'bi-check-circle-fill' : 'bi-plus-circle'}`}></i>
+                  <span>{amenity}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Custom Amenity input */}
+          <div className="row g-2 align-items-center">
+            <div className="col-sm-8">
               <input
                 type="text"
-                className="form-control"
-                placeholder="Add custom amenity..."
+                className="form-control-saas"
+                placeholder="Add custom amenity (e.g., EV Charging Port)"
                 value={customAmenity}
                 onChange={(e) => setCustomAmenity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomAmenity(e);
+                  }
+                }}
               />
+            </div>
+            <div className="col-sm-4">
               <button
                 type="button"
                 onClick={handleAddCustomAmenity}
-                className="btn btn-outline-secondary"
+                className="btn-ll-secondary w-100 justify-content-center"
               >
-                Add
+                <i className="bi bi-plus-lg"></i>
+                <span>Add Amenity</span>
               </button>
             </div>
           </div>
+        </div>
 
-          <div className="mb-4 pt-2">
-            <label className="form-label-saas">Property Notes / Description (Optional)</label>
+        {/* Section 5: Financial Terms & Description */}
+        <div className="card-saas mb-4">
+          <div className="form-section-header">
+            <i className="bi bi-currency-rupee text-muted"></i>
+            <span>5. Financial Valuation & Remarks</span>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label-saas" htmlFor="listedRentInput">
+              Listed Monthly Rent (INR ₹) <span className="text-danger">*</span>
+            </label>
+            <div className="input-group">
+              <span className="input-group-text bg-white text-muted border-end-0">₹</span>
+              <input
+                id="listedRentInput"
+                type="number"
+                name="listedRent"
+                min="0"
+                step="500"
+                className="form-control-saas border-start-0 tabular-nums"
+                placeholder="30000"
+                value={formData.listedRent}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-0">
+            <label className="form-label-saas" htmlFor="descriptionInput">
+              Listing Description / Landlord Notes
+            </label>
             <textarea
+              id="descriptionInput"
               name="description"
-              rows="3"
               className="form-control-saas"
-              placeholder="Highlight special features, nearby landmarks, or maintenance details..."
+              rows="3"
+              placeholder="Highlight property USPs, nearby transit hubs, schools, or tenancy guidelines..."
               value={formData.description}
               onChange={handleChange}
             ></textarea>
           </div>
+        </div>
 
-          <div className="d-flex justify-content-end gap-2 border-top pt-3">
-            <Link to="/properties" className="btn-ll-secondary">
-              Cancel
-            </Link>
-            <button type="submit" disabled={saving} className="btn-ll-primary">
-              {saving ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Saving Property...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-check-lg"></i>
-                  {isEdit ? 'Update Property' : 'Save Property Listing'}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* Form Actions Footer */}
+        <div className="d-flex align-items-center justify-content-between pt-2">
+          <Link to={isEdit ? `/properties/${id}` : '/properties'} className="btn-ll-secondary">
+            <i className="bi bi-x-lg"></i>
+            <span>Cancel</span>
+          </Link>
+
+          <button
+            type="submit"
+            className="btn-ll-primary"
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Saving Listing...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check-lg" aria-hidden="true"></i>
+                <span>{isEdit ? 'Update Property Listing' : 'Save Property Listing'}</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import ConfirmModal from '../../components/common/ConfirmModal.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
@@ -67,88 +68,122 @@ const PropertyDetailPage = () => {
   const { property, activeLease, expenseSummary } = data;
 
   return (
-    <div>
-      {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <Link to="/properties" className="btn btn-sm btn-link text-decoration-none p-0 text-muted mb-2 d-inline-block">
-            <i className="bi bi-arrow-left"></i> Back to Properties
-          </Link>
-          <div className="d-flex align-items-center gap-3">
-            <h3 className="fw-bold mb-0">{property.title}</h3>
-            <StatusBadge status={property.status} />
+    <div className="property-detail-container">
+      {/* Standardized PageHeader with Breadcrumb */}
+      <PageHeader
+        title={property.title}
+        subtitle={`${property.bhk} BHK ${property.propertyType} in ${property.address?.locality}, ${property.address?.city}`}
+        breadcrumb={[
+          { label: 'Properties', to: '/properties' },
+          { label: property.title }
+        ]}
+        badge={<StatusBadge status={property.status} />}
+        actions={
+          <div className="d-flex align-items-center gap-2">
+            <Link to={`/properties/${property._id}/edit`} className="btn-ll-secondary">
+              <i className="bi bi-pencil" aria-hidden="true"></i>
+              <span>Edit Property</span>
+            </Link>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn btn-outline-danger d-inline-flex align-items-center gap-2 rounded-2 px-3 py-2 fw-semibold"
+              style={{ fontSize: '0.9rem' }}
+              aria-label="Delete this property listing"
+            >
+              <i className="bi bi-trash3" aria-hidden="true"></i>
+              <span>Delete</span>
+            </button>
           </div>
-        </div>
-        <div className="d-flex gap-2">
-          <Link to={`/properties/${property._id}/edit`} className="btn-ll-secondary">
-            <i className="bi bi-pencil"></i> Edit Property
-          </Link>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="btn btn-outline-danger d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 fw-semibold"
-          >
-            <i className="bi bi-trash3"></i> Delete
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <ErrorAlert message={error} onDismiss={() => setError(null)} />
 
       <div className="row g-4">
-        {/* Main Details */}
+        {/* Main Specifications & Lease Column */}
         <div className="col-lg-8">
+          {/* Property Specifications Card */}
           <div className="card-saas mb-4">
-            <h5 className="fw-bold mb-3 border-bottom pb-2">Property Specifications</h5>
-            <div className="row g-3">
+            <div className="form-section-header">
+              <i className="bi bi-sliders text-muted"></i>
+              <span>Property Specifications</span>
+            </div>
+
+            <div className="row g-4">
               <div className="col-sm-6">
-                <span className="text-muted small">Locality & City:</span>
-                <div className="fw-bold fs-6 text-dark">{property.address?.locality}, {property.address?.city}</div>
+                <div className="detail-spec-label">Locality & City</div>
+                <div className="detail-spec-value">
+                  {property.address?.locality}, {property.address?.city}
+                </div>
                 {property.address?.state && (
-                  <small className="text-muted">{property.address.state} {property.address.pincode && `· ${property.address.pincode}`}</small>
+                  <small className="text-muted">
+                    {property.address.state} {property.address.pincode && `· PIN: ${property.address.pincode}`}
+                  </small>
                 )}
               </div>
 
               <div className="col-sm-6">
-                <span className="text-muted small">Configuration:</span>
-                <div className="fw-semibold text-dark">{property.bhk} BHK {property.propertyType}</div>
-                <small className="text-muted">{property.bedrooms} Bedrooms · {property.bathrooms} Bathrooms</small>
+                <div className="detail-spec-label">Configuration & Type</div>
+                <div className="detail-spec-value">
+                  {property.bhk} BHK {property.propertyType}
+                </div>
+                <small className="text-muted">
+                  {property.bedrooms} Bedrooms · {property.bathrooms} Bathrooms
+                </small>
               </div>
 
               <div className="col-sm-6">
-                <span className="text-muted small">Super Built-up Area:</span>
-                <div className="fw-semibold text-dark">{property.areaSqFt} sq. ft.</div>
+                <div className="detail-spec-label">Super Built-up Area</div>
+                <div className="detail-spec-value tabular-nums">{property.areaSqFt} sq. ft.</div>
               </div>
 
               <div className="col-sm-6">
-                <span className="text-muted small">Listed Rental Price:</span>
-                <div className="fw-bold fs-5 text-primary">{formatINR(property.listedRent)} / month</div>
+                <div className="detail-spec-label">Listed Rental Valuation</div>
+                <div className="detail-spec-value tabular-nums text-primary" style={{ fontSize: '1.25rem' }}>
+                  {formatINR(property.listedRent)} <span className="text-muted fs-6 fw-normal">/ month</span>
+                </div>
               </div>
 
               <div className="col-sm-6">
-                <span className="text-muted small">Furnishing Status:</span>
-                <div className="fw-semibold text-dark">{property.furnishingStatus}</div>
+                <div className="detail-spec-label">Furnishing Status</div>
+                <div className="detail-spec-value">{property.furnishingStatus}</div>
               </div>
 
               <div className="col-sm-6">
-                <span className="text-muted small">Parking Allocation:</span>
-                <div className="fw-semibold text-dark">{property.parking ? 'Dedicated Parking' : 'Street / None'}</div>
+                <div className="detail-spec-label">Parking Allocation</div>
+                <div className="detail-spec-value">
+                  {property.parking ? 'Dedicated Covered Parking' : 'Street Parking / None'}
+                </div>
               </div>
             </div>
 
             {property.description && (
-              <div className="mt-4 pt-3 border-top">
-                <span className="text-muted small d-block mb-1">Description:</span>
-                <p className="text-muted small mb-0">{property.description}</p>
+              <div className="mt-4 pt-3 border-top" style={{ borderColor: 'var(--ll-border)' }}>
+                <div className="detail-spec-label">Description & Overview</div>
+                <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
+                  {property.description}
+                </p>
               </div>
             )}
 
             {property.amenities && property.amenities.length > 0 && (
-              <div className="mt-4 pt-3 border-top">
-                <span className="text-muted small d-block mb-2">Amenities & Facilities:</span>
+              <div className="mt-4 pt-3 border-top" style={{ borderColor: 'var(--ll-border)' }}>
+                <div className="detail-spec-label mb-2">Amenities & Facilities</div>
                 <div className="d-flex flex-wrap gap-2">
                   {property.amenities.map((am, idx) => (
-                    <span key={idx} className="badge bg-light text-dark border px-3 py-2">
-                      <i className="bi bi-check2 me-1 text-success"></i> {am}
+                    <span
+                      key={idx}
+                      className="badge d-inline-flex align-items-center gap-1 px-3 py-2"
+                      style={{
+                        backgroundColor: 'var(--ll-surface-subtle)',
+                        color: 'var(--ll-text-secondary)',
+                        border: '1px solid var(--ll-border)',
+                        fontSize: '0.8rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      <i className="bi bi-check2 text-success" aria-hidden="true"></i>
+                      <span>{am}</span>
                     </span>
                   ))}
                 </div>
@@ -156,19 +191,29 @@ const PropertyDetailPage = () => {
             )}
           </div>
 
-          {/* Active Lease Section */}
+          {/* Active Lease Section Card */}
           <div className="card-saas">
-            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-              <h5 className="fw-bold mb-0">Active Lease Agreement</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--ll-border)' }}>
+              <div className="form-section-header mb-0 border-0 p-0">
+                <i className="bi bi-file-earmark-text text-muted"></i>
+                <span>Active Tenancy Agreement</span>
+              </div>
               {property.status === 'Available' && !activeLease && (
-                <Link to="/leases/new" className="btn btn-sm btn-outline-primary fw-semibold">
-                  <i className="bi bi-plus-lg"></i> Create Lease
+                <Link to="/leases/new" className="btn-ll-primary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.825rem' }}>
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Create Lease</span>
                 </Link>
               )}
             </div>
 
             {activeLease ? (
-              <div className="p-3 bg-light rounded-3">
+              <div
+                className="p-3 rounded-3"
+                style={{
+                  backgroundColor: 'var(--ll-canvas)',
+                  border: '1px solid var(--ll-border)'
+                }}
+              >
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div className="fw-bold fs-6 text-dark">Tenant: {activeLease.tenant?.name}</div>
                   <StatusBadge status={activeLease.status} />
@@ -176,54 +221,96 @@ const PropertyDetailPage = () => {
                 <div className="text-muted small mb-3">
                   Email: <strong>{activeLease.tenant?.email}</strong> · Phone: <strong>{activeLease.tenant?.phone}</strong>
                 </div>
-                <div className="row g-2 small">
+                <div className="row g-3 small">
                   <div className="col-6 col-sm-3">
-                    <span className="text-muted">Agreed Rent:</span>
-                    <div className="fw-bold text-dark">{formatINR(activeLease.monthlyRent)}/mo</div>
+                    <span className="text-muted d-block">Agreed Rent:</span>
+                    <strong className="text-dark tabular-nums">{formatINR(activeLease.monthlyRent)}/mo</strong>
                   </div>
                   <div className="col-6 col-sm-3">
-                    <span className="text-muted">Security Deposit:</span>
-                    <div className="fw-bold text-dark">{formatINR(activeLease.securityDeposit)}</div>
+                    <span className="text-muted d-block">Security Deposit:</span>
+                    <strong className="text-dark tabular-nums">{formatINR(activeLease.securityDeposit)}</strong>
                   </div>
                   <div className="col-6 col-sm-3">
-                    <span className="text-muted">Start Date:</span>
-                    <div className="text-dark">{formatDate(activeLease.startDate)}</div>
+                    <span className="text-muted d-block">Start Date:</span>
+                    <span className="text-dark tabular-nums">{formatDate(activeLease.startDate)}</span>
                   </div>
                   <div className="col-6 col-sm-3">
-                    <span className="text-muted">End Date:</span>
-                    <div className="text-dark">{formatDate(activeLease.endDate)}</div>
+                    <span className="text-muted d-block">End Date:</span>
+                    <span className="text-dark tabular-nums">{formatDate(activeLease.endDate)}</span>
                   </div>
                 </div>
-                <div className="mt-3 pt-2 border-top text-end">
-                  <Link to={`/leases/${activeLease._id}`} className="btn btn-sm btn-link text-decoration-none fw-semibold">
-                    View Complete Lease Terms <i className="bi bi-arrow-right"></i>
+                <div className="mt-3 pt-2 border-top text-end" style={{ borderColor: 'var(--ll-border)' }}>
+                  <Link
+                    to={`/leases/${activeLease._id}`}
+                    className="btn btn-sm btn-link text-decoration-none fw-semibold text-primary"
+                  >
+                    <span>View Complete Lease Terms</span>
+                    <i className="bi bi-arrow-right ms-1"></i>
                   </Link>
                 </div>
               </div>
             ) : (
-              <div className="p-4 text-center text-muted bg-light rounded-3">
+              <div
+                className="p-4 text-center rounded-3"
+                style={{
+                  backgroundColor: 'var(--ll-surface-subtle)',
+                  border: '1px dashed var(--ll-border)'
+                }}
+              >
                 <i className="bi bi-file-earmark-x fs-3 d-block mb-1 text-muted"></i>
-                <div className="fw-semibold">No active lease agreement on this unit</div>
-                <small>This property is currently vacant and available for occupancy.</small>
+                <div className="fw-semibold text-dark">No active lease agreement on this unit</div>
+                <small className="text-muted">This property is currently vacant and available for occupancy.</small>
               </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar Summary */}
+        {/* Sidebar Summary Column */}
         <div className="col-lg-4">
+          {/* Financial Snapshot Card */}
           <div className="card-saas mb-4">
-            <h5 className="fw-bold mb-3 border-bottom pb-2">Financial Snapshot</h5>
+            <div className="form-section-header">
+              <i className="bi bi-cash-coin text-muted"></i>
+              <span>Financial Snapshot</span>
+            </div>
+
             <div className="mb-3">
-              <span className="text-muted small">Total Unit Operating Expenses:</span>
-              <div className="fw-bold fs-4 text-danger mt-1">
+              <span className="detail-spec-label d-block">Unit Operational Expenses</span>
+              <div className="fw-bold fs-3 text-dark mt-1 tabular-nums">
                 {formatINR(expenseSummary?.totalExpenses || 0)}
               </div>
-              <small className="text-muted">{expenseSummary?.expenseCount || 0} expense logs recorded</small>
+              <small className="text-muted">
+                {expenseSummary?.expenseCount || 0} operational expense {expenseSummary?.expenseCount === 1 ? 'record' : 'records'} logged
+              </small>
             </div>
-            <Link to="/expenses" className="btn btn-sm btn-outline-secondary w-100 mt-2">
-              <i className="bi bi-cash-stack"></i> View Expenses
+
+            <Link to="/expenses" className="btn-ll-secondary w-100 justify-content-center mt-2">
+              <i className="bi bi-receipt" aria-hidden="true"></i>
+              <span>View Operating Expenses</span>
             </Link>
+          </div>
+
+          {/* Quick Details Card */}
+          <div className="card-saas">
+            <div className="form-section-header">
+              <i className="bi bi-info-circle text-muted"></i>
+              <span>Unit Summary</span>
+            </div>
+
+            <div className="small text-muted d-flex flex-column gap-2">
+              <div className="d-flex justify-content-between">
+                <span>Occupancy Status:</span>
+                <span className="fw-semibold text-dark">{property.status}</span>
+              </div>
+              <div className="d-flex justify-content-between">
+                <span>Building Type:</span>
+                <span className="fw-semibold text-dark">{property.propertyType}</span>
+              </div>
+              <div className="d-flex justify-content-between">
+                <span>Parking:</span>
+                <span className="fw-semibold text-dark">{property.parking ? 'Allocated' : 'None'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

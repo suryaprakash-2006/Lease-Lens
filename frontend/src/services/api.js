@@ -145,6 +145,11 @@ export const expensesAPI = {
   getSummary: (params) => apiClient.get('/expenses/summary', params)
 };
 
+// 5. Predict Services
+export const predictAPI = {
+  predict: (payload) => apiClient.post('/predict/predict', payload)
+};
+
 // 5. Dashboard Services
 export const dashboardAPI = {
   getMetrics: () => apiClient.get('/dashboard/metrics'),

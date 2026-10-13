@@ -1,0 +1,342 @@
+{
+  "model_type": "GradientBoostingRegressor",
+  "target": "log1p(Rent)",
+  "target_units": "INR",
+  "hyperparameters": {
+    "n_estimators": 150,
+    "max_depth": 4,
+    "learning_rate": 0.08,
+    "random_state": 42
+  },
+  "training_samples": 3776,
+  "test_samples": 944,
+  "smear_factor": 1.0645049636621995,
+  "log_residual_variance": 0.10921999330877712,
+  "feature_importances": [
+    [
+      "total_floors",
+      0.28706
+    ],
+    [
+      "Bathroom",
+      0.20691
+    ],
+    [
+      "Size",
+      0.18696
+    ],
+    [
+      "City_Mumbai",
+      0.15425
+    ],
+    [
+      "BHK",
+      0.08831
+    ],
+    [
+      "Area Type_Carpet Area",
+      0.01307
+    ],
+    [
+      "City_Delhi",
+      0.01295
+    ],
+    [
+      "City_Hyderabad",
+      0.00976
+    ],
+    [
+      "City_Kolkata",
+      0.00832
+    ],
+    [
+      "Furnishing Status_Unfurnished",
+      0.00739
+    ],
+    [
+      "Furnishing Status_Furnished",
+      0.00601
+    ],
+    [
+      "floor_ratio",
+      0.00595
+    ],
+    [
+      "floor_number",
+      0.00395
+    ],
+    [
+      "Area Type_Super Area",
+      0.00384
+    ],
+    [
+      "Tenant Preferred_Bachelors",
+      0.00216
+    ],
+    [
+      "Tenant Preferred_Family",
+      0.0015
+    ],
+    [
+      "City_Chennai",
+      0.00067
+    ],
+    [
+      "Tenant Preferred_Bachelors/Family",
+      0.00043
+    ],
+    [
+      "Furnishing Status_Semi-Furnished",
+      0.00028
+    ],
+    [
+      "City_Bangalore",
+      0.00023
+    ],
+    [
+      "Area Type_Built Area",
+      0.0
+    ]
+  ],
+  "metrics": {
+    "cv_5fold": {
+      "mae_inr": 10955.43,
+      "rmse_inr": 32444.91,
+      "r2_score": 0.7234,
+      "medae_inr": 3671.46,
+      "mape_percent": 31.59,
+      "accuracy_within_20pct": 43.8
+    },
+    "test_held_out_naive": {
+      "model_name": "Final Selected Model: GBDT (Test, Naive)",
+      "sample_count": 944,
+      "mae_inr": 10589.9,
+      "rmse_inr": 28181.8,
+      "r2_score": 0.6998,
+      "medae_inr": 3728.91,
+      "mape_percent": 30.64,
+      "accuracy_within_10pct": 25.0,
+      "accuracy_within_20pct": 46.08,
+      "accuracy_within_30pct": 64.3,
+      "mean_residual_bias_inr": 3208.99,
+      "max_underprediction_inr": 318414.05,
+      "max_overprediction_inr": 339588.68
+    },
+    "test_held_out_smear": {
+      "model_name": "Final Selected Model: GBDT (Test, Smearing)",
+      "sample_count": 944,
+      "mae_inr": 10745.89,
+      "rmse_inr": 28282.36,
+      "r2_score": 0.6977,
+      "medae_inr": 3991.21,
+      "mape_percent": 33.01,
+      "accuracy_within_10pct": 21.72,
+      "accuracy_within_20pct": 45.02,
+      "accuracy_within_30pct": 62.29,
+      "mean_residual_bias_inr": 1243.78,
+      "max_underprediction_inr": 316376.53,
+      "max_overprediction_inr": 376330.04
+    },
+    "test_baseline_city_median": {
+      "model_name": "Baseline: City Median (Test)",
+      "sample_count": 944,
+      "mae_inr": 19666.85,
+      "rmse_inr": 47437.03,
+      "r2_score": 0.1495,
+      "medae_inr": 6500.0,
+      "mape_percent": 55.55,
+      "accuracy_within_10pct": 12.39,
+      "accuracy_within_20pct": 24.47,
+      "accuracy_within_30pct": 37.18,
+      "mean_residual_bias_inr": 11732.87,
+      "max_underprediction_inr": 597000.0,
+      "max_overprediction_inr": 46500.0
+    },
+    "test_baseline_dummy_median": {
+      "model_name": "Baseline: Dummy Median (Test)",
+      "sample_count": 944,
+      "mae_inr": 23317.8,
+      "rmse_inr": 54390.15,
+      "r2_score": -0.1181,
+      "medae_inr": 8000.0,
+      "mape_percent": 63.4,
+      "accuracy_within_10pct": 9.85,
+      "accuracy_within_20pct": 20.97,
+      "accuracy_within_30pct": 27.86,
+      "mean_residual_bias_inr": 17674.08,
+      "max_underprediction_inr": 634000.0,
+      "max_overprediction_inr": 13800.0
+    }
+  },
+  "slice_performance": {
+    "city": [
+      {
+        "Segment": "Mumbai",
+        "Count": 194,
+        "Median_Actual_INR": 50000.0,
+        "MAE_INR": 23777.01,
+        "RMSE_INR": 46930.39,
+        "R2": 0.678,
+        "MedAE_INR": 11168.06,
+        "MAPE_%": 32.66
+      },
+      {
+        "Segment": "Chennai",
+        "Count": 178,
+        "Median_Actual_INR": 14000.0,
+        "MAE_INR": 7254.7,
+        "RMSE_INR": 19749.64,
+        "R2": 0.5359,
+        "MedAE_INR": 3097.9,
+        "MAPE_%": 30.59
+      },
+      {
+        "Segment": "Bangalore",
+        "Count": 177,
+        "Median_Actual_INR": 14500.0,
+        "MAE_INR": 5862.62,
+        "RMSE_INR": 12674.84,
+        "R2": 0.6329,
+        "MedAE_INR": 2960.11,
+        "MAPE_%": 28.56
+      },
+      {
+        "Segment": "Hyderabad",
+        "Count": 173,
+        "Median_Actual_INR": 14000.0,
+        "MAE_INR": 4145.3,
+        "RMSE_INR": 6171.25,
+        "R2": 0.9056,
+        "MedAE_INR": 2645.64,
+        "MAPE_%": 24.86
+      },
+      {
+        "Segment": "Delhi",
+        "Count": 118,
+        "Median_Actual_INR": 20100.0,
+        "MAE_INR": 15307.78,
+        "RMSE_INR": 39744.03,
+        "R2": 0.2627,
+        "MedAE_INR": 5061.51,
+        "MAPE_%": 40.31
+      },
+      {
+        "Segment": "Kolkata",
+        "Count": 104,
+        "Median_Actual_INR": 8000.0,
+        "MAE_INR": 5112.05,
+        "RMSE_INR": 17435.69,
+        "R2": 0.0882,
+        "MedAE_INR": 1984.99,
+        "MAPE_%": 29.12
+      }
+    ],
+    "bhk": [
+      {
+        "Segment": "1 BHK",
+        "Count": 228,
+        "Median_Actual_INR": 10000.0,
+        "MAE_INR": 4433.45,
+        "RMSE_INR": 8305.23,
+        "R2": 0.6187,
+        "MedAE_INR": 2104.98,
+        "MAPE_%": 30.67
+      },
+      {
+        "Segment": "2 BHK",
+        "Count": 441,
+        "Median_Actual_INR": 14000.0,
+        "MAE_INR": 6535.11,
+        "RMSE_INR": 14958.2,
+        "R2": 0.6304,
+        "MedAE_INR": 3162.09,
+        "MAPE_%": 27.55
+      },
+      {
+        "Segment": "3 BHK",
+        "Count": 234,
+        "Median_Actual_INR": 30000.0,
+        "MAE_INR": 15040.51,
+        "RMSE_INR": 27734.04,
+        "R2": 0.7439,
+        "MedAE_INR": 7805.3,
+        "MAPE_%": 33.61
+      },
+      {
+        "Segment": "4 BHK",
+        "Count": 34,
+        "Median_Actual_INR": 110000.0,
+        "MAE_INR": 53364.07,
+        "RMSE_INR": 92350.82,
+        "R2": 0.1211,
+        "MedAE_INR": 31620.29,
+        "MAPE_%": 48.46
+      }
+    ],
+    "rent_tier": [
+      {
+        "Segment": "1. Budget (< 20k INR)",
+        "Count": 526,
+        "Median_Actual_INR": 11000.0,
+        "MAE_INR": 3307.13,
+        "RMSE_INR": 5817.14,
+        "R2": -1.2476,
+        "MedAE_INR": 2114.99,
+        "MAPE_%": 32.51
+      },
+      {
+        "Segment": "2. Mid-Tier (20k - 50k INR)",
+        "Count": 282,
+        "Median_Actual_INR": 30000.0,
+        "MAE_INR": 8273.68,
+        "RMSE_INR": 10636.68,
+        "R2": -0.4519,
+        "MedAE_INR": 7188.39,
+        "MAPE_%": 27.05
+      },
+      {
+        "Segment": "3. Premium (50k - 1.5L INR)",
+        "Count": 101,
+        "Median_Actual_INR": 80000.0,
+        "MAE_INR": 23835.96,
+        "RMSE_INR": 31019.33,
+        "R2": -0.1924,
+        "MedAE_INR": 19478.16,
+        "MAPE_%": 27.45
+      },
+      {
+        "Segment": "4. Luxury (> 1.5L INR)",
+        "Count": 35,
+        "Median_Actual_INR": 200000.0,
+        "MAE_INR": 100477.32,
+        "RMSE_INR": 131241.43,
+        "R2": -1.1343,
+        "MedAE_INR": 69874.23,
+        "MAPE_%": 40.62
+      }
+    ]
+  },
+  "feature_names": [
+    "BHK",
+    "Size",
+    "Bathroom",
+    "floor_number",
+    "total_floors",
+    "floor_ratio",
+    "City_Bangalore",
+    "City_Chennai",
+    "City_Delhi",
+    "City_Hyderabad",
+    "City_Kolkata",
+    "City_Mumbai",
+    "Furnishing Status_Furnished",
+    "Furnishing Status_Semi-Furnished",
+    "Furnishing Status_Unfurnished",
+    "Tenant Preferred_Bachelors",
+    "Tenant Preferred_Bachelors/Family",
+    "Tenant Preferred_Family",
+    "Area Type_Built Area",
+    "Area Type_Carpet Area",
+    "Area Type_Super Area"
+  ]
+}

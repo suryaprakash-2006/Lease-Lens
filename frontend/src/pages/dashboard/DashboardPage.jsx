@@ -6,6 +6,8 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 
 const DashboardPage = () => {
   const [metrics, setMetrics] = useState(null);
@@ -53,100 +55,116 @@ const DashboardPage = () => {
     metrics.expenses?.totalAllTime === 0;
 
   return (
-    <div>
-      {/* Header action bar */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <h3 className="fw-bold mb-1">Portfolio Summary</h3>
-          <p className="text-muted small mb-0">
-            Real-time occupancy tracking, lease lifecycle notifications, and operational cash flow analytics
-          </p>
-        </div>
-        <div className="d-flex gap-2">
-          <Link to="/properties/new" className="btn-ll-primary">
-            <i className="bi bi-plus-lg"></i> Add Property
-          </Link>
-          <button onClick={fetchDashboardData} className="btn-ll-secondary" title="Refresh Dashboard">
-            <i className="bi bi-arrow-clockwise"></i> Refresh
-          </button>
-        </div>
-      </div>
+    <div className="dashboard-page-container">
+      {/* Standardized Reusable Page Header */}
+      <PageHeader
+        title="Portfolio Summary"
+        subtitle="Real-time occupancy tracking, lease lifecycle notifications, and operational cash flow analytics"
+        badge={
+          <span
+            className="badge rounded-pill bg-light border text-muted px-2 py-1"
+            style={{ fontSize: '0.72rem', borderColor: 'var(--ll-border)' }}
+          >
+            Live Operations
+          </span>
+        }
+        actions={
+          <>
+            <Link to="/properties/new" className="btn-ll-primary">
+              <i className="bi bi-plus-lg" aria-hidden="true"></i>
+              <span>Add Property</span>
+            </Link>
+            <button
+              onClick={fetchDashboardData}
+              className="btn-ll-secondary"
+              title="Refresh Dashboard Metrics"
+              aria-label="Refresh Dashboard Metrics"
+            >
+              <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+              <span>Refresh</span>
+            </button>
+          </>
+        }
+      />
 
+      {/* Dismissible Error Alert */}
       <ErrorAlert message={error} onDismiss={() => setError(null)} />
 
-      {/* KPI Stats Grid */}
+      {/* KPI Stats Grid (Using Reusable StatCard Component) */}
       <div className="row g-3 mb-4">
-        {/* Total Properties Card */}
+        {/* Total Properties */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Total Properties</div>
-              <div className="stat-value">{metrics?.properties?.total ?? 0}</div>
-              <div className="small text-muted mt-1">
-                <span className="text-success fw-semibold">{metrics?.properties?.rented ?? 0} Rented</span> ·{' '}
+          <StatCard
+            label="TOTAL PROPERTIES"
+            value={metrics?.properties?.total ?? 0}
+            supportingText={
+              <span>
+                <strong className="text-success">{metrics?.properties?.rented ?? 0} Rented</strong> ·{' '}
                 <span>{metrics?.properties?.available ?? 0} Available</span>
-              </div>
-            </div>
-            <div className="stat-icon-wrapper bg-primary-subtle text-primary">
-              <i className="bi bi-building"></i>
-            </div>
-          </div>
+              </span>
+            }
+            icon="bi-building"
+            variant="primary"
+            className="h-100"
+          />
         </div>
 
-        {/* Active Leases Card */}
+        {/* Active Leases */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Active Leases</div>
-              <div className="stat-value">{metrics?.leases?.active ?? 0}</div>
-              <div className="small text-muted mt-1">
-                <span className="text-info fw-semibold">{metrics?.leases?.upcoming ?? 0} Upcoming</span> ·{' '}
+          <StatCard
+            label="ACTIVE LEASES"
+            value={metrics?.leases?.active ?? 0}
+            supportingText={
+              <span>
+                <strong className="text-info">{metrics?.leases?.upcoming ?? 0} Upcoming</strong> ·{' '}
                 <span>{metrics?.leases?.expired ?? 0} Expired</span>
-              </div>
-            </div>
-            <div className="stat-icon-wrapper bg-info-subtle text-info">
-              <i className="bi bi-file-earmark-text"></i>
-            </div>
-          </div>
+              </span>
+            }
+            icon="bi-file-earmark-text"
+            variant="info"
+            className="h-100"
+          />
         </div>
 
         {/* Monthly Rental Income */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Monthly Rental Revenue</div>
-              <div className="stat-value text-primary">
-                {formatINR(metrics?.financials?.monthlyRentalIncome ?? 0)}
-              </div>
-              <div className="small text-muted mt-1">
+          <StatCard
+            label="MONTHLY RENTAL REVENUE"
+            value={formatINR(metrics?.financials?.monthlyRentalIncome ?? 0)}
+            supportingText={
+              <span>
                 Occupancy Rate: <strong className="text-dark">{metrics?.properties?.occupancyRate ?? 0}%</strong>
-              </div>
-            </div>
-            <div className="stat-icon-wrapper bg-success-subtle text-success">
-              <i className="bi bi-currency-rupee"></i>
-            </div>
-          </div>
+              </span>
+            }
+            trend={{
+              direction: (metrics?.properties?.occupancyRate ?? 0) > 0 ? 'up' : 'neutral',
+              label: `${metrics?.properties?.occupancyRate ?? 0}% Occupancy`,
+              positive: (metrics?.properties?.occupancyRate ?? 0) > 0
+            }}
+            icon="bi-currency-rupee"
+            variant="success"
+            className="h-100"
+          />
         </div>
 
         {/* Net Cash Flow */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Net Monthly Cash Flow</div>
-              <div className="stat-value text-dark">
-                {formatINR(metrics?.financials?.netMonthlyCashFlow ?? 0)}
-              </div>
-              <div className="small text-muted mt-1">
-                Expenses: {formatINR(metrics?.financials?.monthlyExpenses ?? 0)}
-              </div>
-            </div>
-            <div className="stat-icon-wrapper bg-warning-subtle text-warning">
-              <i className="bi bi-wallet2"></i>
-            </div>
-          </div>
+          <StatCard
+            label="NET MONTHLY CASH FLOW"
+            value={formatINR(metrics?.financials?.netMonthlyCashFlow ?? 0)}
+            supportingText={
+              <span>
+                Expenses: <strong>{formatINR(metrics?.financials?.monthlyExpenses ?? 0)}</strong>
+              </span>
+            }
+            icon="bi-wallet2"
+            variant="warning"
+            className="h-100"
+          />
         </div>
       </div>
 
+      {/* Main Content Area */}
       {hasNoData ? (
         <EmptyState
           icon="bi-speedometer2"
@@ -162,49 +180,100 @@ const DashboardPage = () => {
             <div className="card-saas h-100">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                  <h5 className="fw-bold mb-0">Upcoming Lease Events</h5>
+                  <h5 className="fw-bold mb-0 text-dark" style={{ fontFamily: 'var(--ll-heading-font)' }}>
+                    Upcoming Lease Events
+                  </h5>
                   <small className="text-muted">Expiring contracts or move-in deadlines within 30 days</small>
                 </div>
-                <Link to="/leases" className="small fw-semibold text-primary">
-                  View All Leases <i className="bi bi-arrow-right"></i>
+                <Link to="/leases" className="small fw-semibold text-primary d-inline-flex align-items-center gap-1">
+                  <span>View All Leases</span>
+                  <i className="bi bi-arrow-right"></i>
                 </Link>
               </div>
 
               {upcomingEvents.length === 0 ? (
-                <div className="p-4 text-center text-muted bg-light rounded-3 my-2">
+                <div
+                  className="p-4 text-center rounded-3 my-2"
+                  style={{
+                    backgroundColor: 'var(--ll-surface-subtle)',
+                    border: '1px dashed var(--ll-border)'
+                  }}
+                >
                   <i className="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
-                  <div className="fw-semibold">All contracts healthy! No pending renewals or move-ins in the next 30 days.</div>
+                  <div className="fw-semibold text-dark">All contracts healthy!</div>
+                  <small className="text-muted">No pending renewals or move-ins in the next 30 days.</small>
                 </div>
               ) : (
                 <div className="d-flex flex-column gap-2">
                   {upcomingEvents.map((evt) => (
                     <div
                       key={evt._id}
-                      className="p-3 border rounded-3 d-flex align-items-center justify-content-between bg-light-subtle"
+                      className="p-3 rounded-3 d-flex align-items-center justify-content-between"
+                      style={{
+                        backgroundColor: 'var(--ll-canvas)',
+                        border: '1px solid var(--ll-border)',
+                        transition: 'border-color 0.15s ease'
+                      }}
                     >
                       <div className="d-flex align-items-center gap-3">
                         <div
-                          className={`rounded-circle p-2 d-flex align-items-center justify-content-center ${
-                            evt.eventType === 'EXPIRATION' ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'
-                          }`}
-                          style={{ width: '42px', height: '42px' }}
+                          className="rounded-2 d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            backgroundColor:
+                              evt.eventType === 'EXPIRATION' ? 'var(--ll-danger-bg)' : 'var(--ll-info-bg)',
+                            color:
+                              evt.eventType === 'EXPIRATION' ? 'var(--ll-danger)' : 'var(--ll-info)',
+                            border: `1px solid ${
+                              evt.eventType === 'EXPIRATION'
+                                ? 'var(--ll-danger-border)'
+                                : 'var(--ll-info-border)'
+                            }`
+                          }}
                         >
-                          <i className={`bi ${evt.eventType === 'EXPIRATION' ? 'bi-hourglass-split' : 'bi-box-arrow-in-right'} fs-5`}></i>
+                          <i
+                            className={`bi ${
+                              evt.eventType === 'EXPIRATION' ? 'bi-hourglass-split' : 'bi-box-arrow-in-right'
+                            } fs-5`}
+                            aria-hidden="true"
+                          ></i>
                         </div>
                         <div>
-                          <Link to={`/leases/${evt._id}`} className="fw-bold text-dark text-decoration-none">
+                          <Link
+                            to={`/leases/${evt._id}`}
+                            className="fw-bold text-dark text-decoration-none"
+                          >
                             {evt.property?.title || 'Property Unit'}
                           </Link>
                           <div className="small text-muted">
-                            Tenant: <strong>{evt.tenant?.name}</strong> · Rent: {formatINR(evt.monthlyRent)}/mo
+                            Tenant: <strong className="text-dark">{evt.tenant?.name}</strong> · Rent:{' '}
+                            <span className="tabular-nums fw-medium">{formatINR(evt.monthlyRent)}/mo</span>
                           </div>
                         </div>
                       </div>
+
                       <div className="text-end">
-                        <span className={`badge ${evt.daysRemaining <= 7 ? 'bg-danger' : 'bg-warning text-dark'} px-2 py-1`}>
+                        <span
+                          className="badge px-2 py-1"
+                          style={{
+                            backgroundColor:
+                              evt.daysRemaining <= 7 ? 'var(--ll-danger-bg)' : 'var(--ll-warning-bg)',
+                            color:
+                              evt.daysRemaining <= 7 ? 'var(--ll-danger)' : 'var(--ll-warning)',
+                            border: `1px solid ${
+                              evt.daysRemaining <= 7
+                                ? 'var(--ll-danger-border)'
+                                : 'var(--ll-warning-border)'
+                            }`,
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          <i className="bi bi-clock me-1" aria-hidden="true"></i>
                           {formatDaysRemaining(evt.daysRemaining)}
                         </span>
-                        <div className="small text-muted mt-1">
+                        <div className="small text-muted mt-1 tabular-nums" style={{ fontSize: '0.75rem' }}>
                           {formatDate(evt.targetDate)}
                         </div>
                       </div>
@@ -220,41 +289,60 @@ const DashboardPage = () => {
             <div className="card-saas h-100">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                  <h5 className="fw-bold mb-0">Expense Breakdown</h5>
+                  <h5 className="fw-bold mb-0 text-dark" style={{ fontFamily: 'var(--ll-heading-font)' }}>
+                    Expense Breakdown
+                  </h5>
                   <small className="text-muted">Categorized operational distribution</small>
                 </div>
-                <Link to="/expenses" className="small fw-semibold text-primary">
-                  Manage Expenses <i className="bi bi-arrow-right"></i>
+                <Link to="/expenses" className="small fw-semibold text-primary d-inline-flex align-items-center gap-1">
+                  <span>Manage Expenses</span>
+                  <i className="bi bi-arrow-right"></i>
                 </Link>
               </div>
 
-              {(!expenseChart?.categories || expenseChart.categories.length === 0) ? (
-                <div className="p-4 text-center text-muted bg-light rounded-3 my-2">
+              {!expenseChart?.categories || expenseChart.categories.length === 0 ? (
+                <div
+                  className="p-4 text-center rounded-3 my-2"
+                  style={{
+                    backgroundColor: 'var(--ll-surface-subtle)',
+                    border: '1px dashed var(--ll-border)'
+                  }}
+                >
                   <i className="bi bi-receipt text-muted fs-3 d-block mb-2"></i>
-                  <div className="fw-semibold">No operational expenses logged yet</div>
+                  <div className="fw-semibold text-dark">No operational expenses logged yet</div>
+                  <small className="text-muted">Track property maintenance, taxes, and utility bills here.</small>
                 </div>
               ) : (
                 <div className="d-flex flex-column gap-3">
-                  {expenseChart.categories.map((cat) => (
-                    <div key={cat.category}>
-                      <div className="d-flex justify-content-between align-items-center mb-1 small">
-                        <span className="fw-semibold text-dark">{cat.category}</span>
-                        <span className="text-muted">
-                          {formatINR(cat.totalAmount)} ({cat.percentage}%)
-                        </span>
+                  {expenseChart.categories.map((cat, idx) => {
+                    const barColors = ['var(--ll-primary)', '#2C5282', '#216E4E', '#8F5E15', '#78716C'];
+                    const barColor = barColors[idx % barColors.length];
+
+                    return (
+                      <div key={cat.category}>
+                        <div className="d-flex justify-content-between align-items-center mb-1 small">
+                          <span className="fw-semibold text-dark">{cat.category}</span>
+                          <span className="text-muted tabular-nums">
+                            <strong>{formatINR(cat.totalAmount)}</strong> ({cat.percentage}%)
+                          </span>
+                        </div>
+                        <div className="progress" style={{ height: '6px', backgroundColor: 'var(--ll-surface-subtle)' }}>
+                          <div
+                            className="progress-bar"
+                            role="progressbar"
+                            style={{
+                              width: `${cat.percentage}%`,
+                              backgroundColor: barColor,
+                              borderRadius: '4px'
+                            }}
+                            aria-valuenow={cat.percentage}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                          ></div>
+                        </div>
                       </div>
-                      <div className="progress" style={{ height: '7px' }}>
-                        <div
-                          className="progress-bar bg-primary"
-                          role="progressbar"
-                          style={{ width: `${cat.percentage}%` }}
-                          aria-valuenow={cat.percentage}
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -264,8 +352,12 @@ const DashboardPage = () => {
           <div className="col-12">
             <div className="card-saas">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold mb-0">Recent Activity Feed</h5>
-                <small className="text-muted">Unified portfolio audit log</small>
+                <div>
+                  <h5 className="fw-bold mb-0 text-dark" style={{ fontFamily: 'var(--ll-heading-font)' }}>
+                    Recent Activity Feed
+                  </h5>
+                  <small className="text-muted">Unified portfolio audit log</small>
+                </div>
               </div>
 
               {recentActivity.length === 0 ? (
@@ -286,11 +378,19 @@ const DashboardPage = () => {
                       {recentActivity.map((act, index) => (
                         <tr key={index}>
                           <td>
-                            <span className="badge bg-secondary-subtle text-secondary border">
+                            <span
+                              className="badge rounded-pill"
+                              style={{
+                                backgroundColor: 'var(--ll-surface-subtle)',
+                                color: 'var(--ll-text-secondary)',
+                                border: '1px solid var(--ll-border)',
+                                fontSize: '0.72rem'
+                              }}
+                            >
                               {act.type}
                             </span>
                           </td>
-                          <td className="fw-semibold">{act.action}</td>
+                          <td className="fw-semibold text-dark">{act.action}</td>
                           <td>
                             <div className="fw-bold text-dark">{act.title}</div>
                             {act.subtitle && <small className="text-muted">{act.subtitle}</small>}
@@ -298,10 +398,12 @@ const DashboardPage = () => {
                           <td>
                             {act.status && <StatusBadge status={act.status} />}
                             {act.amount !== undefined && (
-                              <span className="fw-semibold text-dark">{formatINR(act.amount)}</span>
+                              <span className="fw-semibold text-dark tabular-nums">
+                                {formatINR(act.amount)}
+                              </span>
                             )}
                           </td>
-                          <td className="text-muted small">
+                          <td className="text-muted small tabular-nums">
                             {formatDate(act.timestamp, { hour: '2-digit', minute: '2-digit' })}
                           </td>
                         </tr>

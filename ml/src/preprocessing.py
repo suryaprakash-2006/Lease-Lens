@@ -290,8 +290,12 @@ class RentalPreprocessor:
         X = pd.concat([X_num, X_cat], axis=1)
 
         # Targets
-        y_raw = df_eng["Rent"].reset_index(drop=True)
-        y_log = np.log1p(y_raw)
+        if "Rent" in df_eng.columns:
+            y_raw = df_eng["Rent"].reset_index(drop=True)
+            y_log = np.log1p(y_raw)
+        else:
+            y_raw = None
+            y_log = None
 
         return X, y_raw, y_log
 

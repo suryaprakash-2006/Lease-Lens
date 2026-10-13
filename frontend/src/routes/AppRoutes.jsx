@@ -21,6 +21,7 @@ import LeaseFormPage from '../pages/leases/LeaseFormPage.jsx';
 
 import ExpensesPage from '../pages/expenses/ExpensesPage.jsx';
 import ProfilePage from '../pages/profile/ProfilePage.jsx';
+import PredictionPage from '../pages/predictions/PredictionPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 
 const AppRoutes = () => {
@@ -53,6 +54,9 @@ const AppRoutes = () => {
 
           {/* Expenses */}
           <Route path="/expenses" element={<ExpensesPage />} />
+
+          {/* Rent Prediction */}
+          <Route path="/predict" element={<PredictionPage />} />
 
           {/* User Profile */}
           <Route path="/profile" element={<ProfilePage />} />

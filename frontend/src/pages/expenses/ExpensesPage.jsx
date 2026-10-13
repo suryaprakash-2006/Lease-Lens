@@ -5,6 +5,8 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.jsx';
 import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import ConfirmModal from '../../components/common/ConfirmModal.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 
 const EXPENSE_CATEGORIES = [
   'Maintenance',
@@ -179,67 +181,55 @@ const ExpensesPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <h3 className="fw-bold mb-1">Operating Expenses</h3>
-          <p className="text-muted small mb-0">
-            Log and analyze property maintenance, utilities, repairs, and operational cash outflow
-          </p>
-        </div>
-        <div>
+      <PageHeader
+        title="Operating Expenses"
+        subtitle="Log and analyze property maintenance, utilities, repairs, and operational cash outflow"
+        badge={
+          summary ? (
+            <span className="badge bg-light text-secondary border px-2 py-1" style={{ fontSize: '0.75rem' }}>
+              {summary.expenseCount ?? expenses.length} recorded
+            </span>
+          ) : null
+        }
+        actions={
           <button onClick={openCreateModal} className="btn-ll-primary">
             <i className="bi bi-plus-lg"></i> Log New Expense
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <ErrorAlert message={error} onDismiss={() => setError(null)} />
 
       {/* Summary KPI Cards */}
       <div className="row g-3 mb-4">
         <div className="col-sm-4">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Total Expenses</div>
-              <div className="stat-value text-danger">
-                {formatINR(summary?.totalExpenses || 0)}
-              </div>
-              <div className="small text-muted mt-1">{summary?.expenseCount || 0} recorded transactions</div>
-            </div>
-            <div className="stat-icon-wrapper bg-danger-subtle text-danger">
-              <i className="bi bi-wallet2"></i>
-            </div>
-          </div>
+          <StatCard
+            label="Total Expenses"
+            value={formatINR(summary?.totalExpenses || 0)}
+            supportingText={`${summary?.expenseCount || 0} recorded transactions`}
+            icon="bi-wallet2"
+            variant="warning"
+          />
         </div>
 
         <div className="col-sm-4">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Average Outlay</div>
-              <div className="stat-value text-dark">
-                {formatINR(summary?.averageExpense || 0)}
-              </div>
-              <div className="small text-muted mt-1">per expense entry</div>
-            </div>
-            <div className="stat-icon-wrapper bg-primary-subtle text-primary">
-              <i className="bi bi-calculator"></i>
-            </div>
-          </div>
+          <StatCard
+            label="Average Outlay"
+            value={formatINR(summary?.averageExpense || 0)}
+            supportingText="per expense entry"
+            icon="bi-calculator"
+            variant="default"
+          />
         </div>
 
         <div className="col-sm-4">
-          <div className="stat-card h-100">
-            <div>
-              <div className="stat-label">Active Categories</div>
-              <div className="stat-value text-primary">
-                {summary?.byCategory?.length || 0}
-              </div>
-              <div className="small text-muted mt-1">spending streams</div>
-            </div>
-            <div className="stat-icon-wrapper bg-info-subtle text-info">
-              <i className="bi bi-tags"></i>
-            </div>
-          </div>
+          <StatCard
+            label="Active Categories"
+            value={summary?.byCategory?.length || 0}
+            supportingText="spending streams"
+            icon="bi-tags"
+            variant="info"
+          />
         </div>
       </div>
 
@@ -247,6 +237,7 @@ const ExpensesPage = () => {
       <div className="card-saas mb-4 p-3">
         <div className="d-flex flex-wrap gap-3 align-items-center">
           <div style={{ minWidth: '180px' }}>
+            <label className="form-label-saas mb-1" style={{ fontSize: '0.75rem' }}>Filter by Category</label>
             <select
               className="form-select-saas"
               value={categoryFilter}
@@ -260,6 +251,7 @@ const ExpensesPage = () => {
           </div>
 
           <div style={{ minWidth: '220px' }}>
+            <label className="form-label-saas mb-1" style={{ fontSize: '0.75rem' }}>Filter by Property</label>
             <select
               className="form-select-saas"
               value={propertyFilter}
@@ -274,15 +266,17 @@ const ExpensesPage = () => {
           </div>
 
           {hasActiveFilters && (
-            <button
-              onClick={() => {
-                setCategoryFilter('');
-                setPropertyFilter('');
-              }}
-              className="btn-ll-secondary ms-auto"
-            >
-              <i className="bi bi-x-circle"></i> Clear Filters
-            </button>
+            <div className="ms-auto align-self-end">
+              <button
+                onClick={() => {
+                  setCategoryFilter('');
+                  setPropertyFilter('');
+                }}
+                className="btn-ll-secondary"
+              >
+                <i className="bi bi-x-circle"></i> Clear Filters
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -323,13 +317,13 @@ const ExpensesPage = () => {
                     <td>
                       <div className="fw-bold text-dark">{exp.title}</div>
                       {exp.isRecurringMonthly && (
-                        <span className="badge bg-info-subtle text-info border" style={{ fontSize: '0.7rem' }}>
-                          Recurring Monthly
+                        <span className="badge bg-info-subtle text-info border mt-1" style={{ fontSize: '0.7rem' }}>
+                          <i className="bi bi-arrow-repeat me-1"></i> Recurring Monthly
                         </span>
                       )}
                     </td>
                     <td>
-                      <span className="badge bg-secondary-subtle text-secondary border">
+                      <span className="badge bg-light text-secondary border px-2 py-1" style={{ fontSize: '0.75rem' }}>
                         {exp.category}
                       </span>
                     </td>
@@ -343,7 +337,7 @@ const ExpensesPage = () => {
                         <span className="badge bg-light text-muted border">Portfolio-Wide</span>
                       )}
                     </td>
-                    <td className="fw-bold text-dark">{formatINR(exp.amount)}</td>
+                    <td className="fw-bold text-dark tabular-nums">{formatINR(exp.amount)}</td>
                     <td>{formatDate(exp.expenseDate)}</td>
                     <td className="text-muted small">{exp.notes || '—'}</td>
                     <td className="text-end">
@@ -374,11 +368,11 @@ const ExpensesPage = () => {
 
       {/* Add / Edit Expense Modal */}
       {modalMode && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', zIndex: 1050 }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '520px' }}>
-            <div className="modal-content rounded-3 border-0 shadow-lg overflow-hidden">
-              <div className="modal-header border-bottom py-3 px-4">
-                <h5 className="modal-title fw-bold text-dark">
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(3px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '540px' }}>
+            <div className="modal-content card-saas p-0 border-0 shadow-lg overflow-hidden">
+              <div className="modal-header border-bottom py-3 px-4 bg-white">
+                <h5 className="modal-title fw-bold text-dark mb-0">
                   {modalMode === 'edit' ? 'Edit Expense Record' : 'Log New Expense'}
                 </h5>
                 <button
@@ -391,7 +385,7 @@ const ExpensesPage = () => {
               </div>
 
               <form onSubmit={handleFormSubmit}>
-                <div className="modal-body p-4">
+                <div className="modal-body p-4 bg-white">
                   <ErrorAlert message={formError} details={formDetails} onDismiss={() => setFormError(null)} />
 
                   <div className="mb-3">
@@ -490,16 +484,16 @@ const ExpensesPage = () => {
                   </div>
                 </div>
 
-                <div className="modal-footer border-top py-3 px-4 bg-light">
+                <div className="modal-footer border-top py-3 px-4 bg-light d-flex justify-content-end gap-2">
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary px-3 py-2 fw-semibold"
+                    className="btn-ll-secondary"
                     onClick={closeModal}
                     disabled={saving}
                   >
                     Cancel
                   </button>
-                  <button type="submit" disabled={saving} className="btn btn-sm btn-primary px-3 py-2 fw-semibold">
+                  <button type="submit" disabled={saving} className="btn-ll-primary">
                     {saving ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" role="status"></span>

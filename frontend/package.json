@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:integration": "node test_frontend_integration.js",
     "test:crud": "node test_frontend_crud.js",
-    "test": "node test_frontend_integration.js && node test_frontend_crud.js"
+    "test:predict": "node test_frontend_predict.js",
+    "test": "node test_frontend_integration.js && node test_frontend_crud.js && node test_frontend_predict.js"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",

@@ -7,6 +7,8 @@ import ErrorAlert from '../../components/common/ErrorAlert.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import ConfirmModal from '../../components/common/ConfirmModal.jsx';
+import PageHeader from '../../components/common/PageHeader.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState([]);
@@ -79,24 +81,77 @@ const PropertiesPage = () => {
     search || city || bhk || status || propertyType || furnishingStatus
   );
 
+  // Accurate summary metrics derived directly from real properties data
+  const totalCount = properties.length;
+  const availableCount = properties.filter((p) => p.status === 'Available').length;
+  const rentedCount = properties.filter((p) => p.status === 'Rented').length;
+  const maintenanceCount = properties.filter((p) => p.status === 'Under Maintenance').length;
+
   return (
-    <div>
-      {/* Header bar */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <h3 className="fw-bold mb-1">Properties Portfolio</h3>
-          <p className="text-muted small mb-0">
-            Manage your real estate listings, unit configurations, and occupancy statuses
-          </p>
-        </div>
-        <div>
+    <div className="properties-page-container">
+      {/* Standardized Reusable Page Header */}
+      <PageHeader
+        title="Properties Portfolio"
+        subtitle="Manage your real estate listings, unit configurations, and occupancy statuses"
+        badge={
+          <span
+            className="badge rounded-pill bg-light border text-muted px-2 py-1"
+            style={{ fontSize: '0.72rem', borderColor: 'var(--ll-border)' }}
+          >
+            {properties.length} {properties.length === 1 ? 'Listing' : 'Listings'}
+          </span>
+        }
+        actions={
           <Link to="/properties/new" className="btn-ll-primary">
-            <i className="bi bi-plus-lg"></i> Add New Property
+            <i className="bi bi-plus-lg" aria-hidden="true"></i>
+            <span>Add New Property</span>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <ErrorAlert message={error} onDismiss={() => setError(null)} />
+
+      {/* Summary KPI Strip (when properties exist) */}
+      {!loading && properties.length > 0 && !hasActiveFilters && (
+        <div className="row g-3 mb-4">
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="TOTAL UNITS"
+              value={totalCount}
+              icon="bi-buildings"
+              variant="default"
+              supportingText="Portfolio size"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="AVAILABLE"
+              value={availableCount}
+              icon="bi-key"
+              variant="success"
+              supportingText="Ready for tenancy"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="RENTED"
+              value={rentedCount}
+              icon="bi-person-check"
+              variant="info"
+              supportingText="Active tenancy"
+            />
+          </div>
+          <div className="col-6 col-lg-3">
+            <StatCard
+              label="MAINTENANCE"
+              value={maintenanceCount}
+              icon="bi-tools"
+              variant="warning"
+              supportingText="Under servicing"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Filter Toolbar */}
       <div className="card-saas mb-4 p-3">
@@ -121,6 +176,7 @@ const PropertiesPage = () => {
               className="form-select-saas"
               value={city}
               onChange={(e) => setCity(e.target.value)}
+              aria-label="Filter by City"
             >
               <option value="">All Cities</option>
               <option value="Bengaluru">Bengaluru</option>
@@ -137,6 +193,7 @@ const PropertiesPage = () => {
               className="form-select-saas"
               value={bhk}
               onChange={(e) => setBhk(e.target.value)}
+              aria-label="Filter by BHK"
             >
               <option value="">All BHKs</option>
               <option value="1">1 BHK</option>
@@ -151,6 +208,7 @@ const PropertiesPage = () => {
               className="form-select-saas"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
+              aria-label="Filter by Status"
             >
               <option value="">All Statuses</option>
               <option value="Available">Available</option>
@@ -164,6 +222,7 @@ const PropertiesPage = () => {
               className="form-select-saas"
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
+              aria-label="Filter by Property Type"
             >
               <option value="">All Types</option>
               <option value="Apartment">Apartment</option>
@@ -187,7 +246,7 @@ const PropertiesPage = () => {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content Body */}
       {loading ? (
         <LoadingSpinner message="Loading properties..." />
       ) : properties.length === 0 ? (
@@ -232,16 +291,25 @@ const PropertiesPage = () => {
                       </div>
                     </td>
                     <td>
-                      <div>{prop.address?.locality}</div>
+                      <div className="fw-medium text-dark">{prop.address?.locality}</div>
                       <small className="text-muted">{prop.address?.city}</small>
                     </td>
                     <td>
-                      <span className="badge bg-light text-dark border">
+                      <span
+                        className="badge"
+                        style={{
+                          backgroundColor: 'var(--ll-surface-subtle)',
+                          color: 'var(--ll-text-primary)',
+                          border: '1px solid var(--ll-border)',
+                          fontSize: '0.75rem',
+                          fontWeight: 600
+                        }}
+                      >
                         {prop.bhk} BHK {prop.propertyType}
                       </span>
                     </td>
-                    <td>{prop.areaSqFt} sq.ft</td>
-                    <td className="fw-bold text-dark">{formatINR(prop.listedRent)}/mo</td>
+                    <td className="tabular-nums">{prop.areaSqFt} sq.ft</td>
+                    <td className="fw-bold text-dark tabular-nums">{formatINR(prop.listedRent)}/mo</td>
                     <td>
                       <StatusBadge status={prop.status} />
                     </td>
@@ -251,6 +319,7 @@ const PropertiesPage = () => {
                           to={`/properties/${prop._id}`}
                           className="btn btn-outline-secondary"
                           title="View Details"
+                          aria-label={`View details of ${prop.title}`}
                         >
                           <i className="bi bi-eye"></i>
                         </Link>
@@ -258,6 +327,7 @@ const PropertiesPage = () => {
                           to={`/properties/${prop._id}/edit`}
                           className="btn btn-outline-secondary"
                           title="Edit Property"
+                          aria-label={`Edit ${prop.title}`}
                         >
                           <i className="bi bi-pencil"></i>
                         </Link>
@@ -265,6 +335,7 @@ const PropertiesPage = () => {
                           onClick={() => setDeletingProperty(prop)}
                           className="btn btn-outline-danger"
                           title="Delete Property"
+                          aria-label={`Delete ${prop.title}`}
                         >
                           <i className="bi bi-trash3"></i>
                         </button>
